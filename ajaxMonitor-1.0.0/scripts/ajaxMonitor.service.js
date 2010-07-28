@@ -71,6 +71,7 @@ function NewAjaxMonitorService(msgBus, stopWatch) {
                 ,requestType:       '*' + settings.type + '*'
                 ,completedStatus:   'unknown'
                 ,timeToComplete:    -1
+                ,url:               settings.url
             };
 
             ajaxMonitorSettings = settings;

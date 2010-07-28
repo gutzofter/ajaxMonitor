@@ -157,7 +157,7 @@ var setupForCompletedMessages = {
     ,teardown: function() {
         service.unwrapAjax();
         //'makes sure that global space shows that monitor is not wrapping ***** this is very critical *****'
-        same(service.isActiveCount(), 0, 'service is deactivated all wrapping vestiges is gone');
+        same(service.isActiveCount(), 0, 'service is deactivated all wrapping is gone');
     }
 };
 
@@ -171,6 +171,7 @@ should('get completion message', function() {
         ,"completedStatus":     "success"
         ,"timeToComplete":      100
         ,"requestType":         "*POST*"
+        ,"url":                 '../../server_side.php'
     };
 
     getAjaxServerRequest({});
