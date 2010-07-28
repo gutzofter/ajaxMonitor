@@ -1,0 +1,97 @@
+.ajax_monitor_control {
+    margin: 2px;
+    cursor: pointer;
+    text-align: right;
+    font-size: 1em;
+    font-weight: normal;
+    color: #99aed6;
+    background-color: #0066cc;
+    border: 1px solid #0e3375;
+    padding: 2px;
+}
+.ajax_monitor_container {
+    width: 900px;
+    margin: 10px auto;
+    padding: 0;
+}
+
+.ajax_monitor_section {
+    width: 820px;
+    margin: 10px 36px;
+    padding: 0;
+    border: 4px solid  #4E6CA3;
+}
+
+#ajax_monitor {
+    width: 920px;
+}
+#ajax_monitor h1 {
+	margin-top: 10px;
+    text-align: right;
+	font-size: 1.3em;
+	font-weight: normal;
+	line-height: 1.6em;
+	color: #4E6CA3;
+	border-top: 4px solid #B0BED9;
+	clear: both;
+}
+
+#ajax_monitor #ajax_monitor_container {
+	width: 900px;
+	margin: 10px auto;
+	padding: 0;
+}
+
+#ajax_monitor .button {
+    cursor: pointer;
+}
+
+#ajax_monitor .section {
+    width: 820px;
+    margin: 2px 36px;
+    padding: 0;
+    border: 4px solid #B0BED9;
+}
+
+#ajax_monitor .control {
+    margin: 2px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 1em;
+    font-weight: normal;
+    color: #0066cc;
+    background-color: #B0BED9;
+    border: 1px solid #4E6CA3;
+    padding: 2px;
+}
+
+#ajax_monitor .main_container {
+    width: 900px;
+    margin: 30px auto;
+    padding: 0;
+    border: 4px solid #B0BED9;
+}
+
+.left_position {
+    float: left;
+}
+
+.left_offset {
+    margin-left: 100px;
+}
+.right_position {
+    float: right;
+}
+
+.reset_left {
+    clear: left;
+}
+
+.reset_right {
+    clear: right;
+}
+
+.invisible {
+    display: none;
+}
+
