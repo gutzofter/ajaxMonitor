@@ -170,7 +170,7 @@ should('get completion message', function() {
         ,"requestStatus":       "completed"
         ,"completedStatus":     "success"
         ,"timeToComplete":      100
-        ,"requestType":         "*POST*"
+        ,"requestType":         "POST [Monitored]"
         ,"url":                 '../../server_side.php'
     };
 

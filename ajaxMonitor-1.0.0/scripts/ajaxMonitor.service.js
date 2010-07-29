@@ -68,7 +68,7 @@ function NewAjaxMonitorService(msgBus, stopWatch) {
         $.ajax = function(settings) {
             messageCache[messageCount] = {
                 id:                 messageCount
-                ,requestType:       '*' + settings.type + '*'
+                ,requestType:       settings.type + ' [Monitored]'
                 ,completedStatus:   'unknown'
                 ,timeToComplete:    -1
                 ,url:               settings.url

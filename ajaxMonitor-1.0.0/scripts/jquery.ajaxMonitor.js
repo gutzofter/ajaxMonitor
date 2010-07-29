@@ -18,10 +18,8 @@
     var coordinator = NewAjaxMonitorCoordinator(msgBus, model, service);
 
 
-    (function() {
-        internalData.version = '1.0.0';
-        internalData.plugInName = 'ajaxMonitor';
-    }());
+    internalData.version = '1.0.0';
+    internalData.plugInName = 'ajaxMonitor';
 
     $.fn.ajaxMonitor = function(settings) {
         var defaultSettings = {

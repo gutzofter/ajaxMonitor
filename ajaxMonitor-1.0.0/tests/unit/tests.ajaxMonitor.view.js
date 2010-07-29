@@ -87,8 +87,17 @@ should('verify display toggle', function() {
 });
 
 should('add new message to monitor messages window', function() {
-    view.newMessage({ "completedStatus": "success", "timeToComplete": 100 });
+    var message = {
+        "id":                   0
+        ,"requestStatus":       "completed"
+        ,"completedStatus":     "success"
+        ,"timeToComplete":      100
+        ,"requestType":         "POST [Monitored]"
+        ,"url":                 '../../server_side.php'
+    };
+
+    view.newMessage(message);
 
     // remember you have all html stripped from text in your asserts (see view.newMessage. it adds a tabel entry)
-    same($('#monitor_messages').text(), 'Monitor MessagesStatusCompletion Time mSec(s)success100StatusCompletion Time mSec(s)');
+    same($('#monitor_messages').text(), 'Monitor MessagesIdCompletion Time mSec(s)Request TypeUrlRequest StatusCompletion Status0100POST [Monitored]../../server_side.phpcompletedsuccessIdCompletion Time mSec(s)Request TypeUrlRequest StatusCompletion Status');
 });

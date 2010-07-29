@@ -29,23 +29,11 @@ function NewAjaxMonitorView(msgBus) {
                 .append('<div id="activate_control" class="control right_position">Activate Not Initialized</div>');
 
         $('#monitor_messages')
-            .append('<table id="monitor_table" />');
+                .append('<table id="monitor_table" />');
 
-        $('<thead>' +
-                '<tr>' +
-                    '<th>Status</th><th>Completion Time mSec(s)</th>' +
-                '</tr>' +
-                '</thead>').appendTo('#monitor_table');
-        $('<tbody>' +
-                '<tr>' +
-//                    '<td>------</td><td>0</td>' +
-                '</tr>' +
-                '</tbody>').appendTo('#monitor_table');
-        $('<tfoot>' +
-                '<tr>' +
-                    '<th>Status</th><th>Completion Time mSec(s)</th>' +
-                '</tr>' +
-                '</tfoot>').appendTo('#monitor_table');
+        $('<thead>' + view.formatColumnHTML() + '</thead>').appendTo('#monitor_table');
+        $('<tbody>' + '<tr>' + '</tr>' + '</tbody>').appendTo('#monitor_table');
+        $('<tfoot>' + view.formatColumnHTML() + '</tfoot>').appendTo('#monitor_table');
 
         $('#monitor_container').hide();
 
@@ -90,10 +78,46 @@ function NewAjaxMonitorView(msgBus) {
     };
 
     view.newMessage = function(message) {
-        var tableEntry = '<tr>' +
-                '<td>' + message.completedStatus + '</td>' +
-                '<td>' + message.timeToComplete + '</td>';
+        var tableEntry = view.formatMessageHTML(message);
         $('#monitor_table tbody').append(tableEntry);
+    };
+
+    view.formatColumnHTML = function() {
+        var columns = '<tr>';
+
+        columns += view.formatColumnItemHTML('Id', 10);
+        columns += view.formatColumnItemHTML('Completion Time mSec(s)', 10);
+        columns += view.formatColumnItemHTML('Request Type', 25);
+        columns += view.formatColumnItemHTML('Url', 25);
+        columns += view.formatColumnItemHTML('Request Status', 15);
+        columns += view.formatColumnItemHTML('Completion Status', 15);
+
+        columns += '</tr>';
+
+        return columns;
+    };
+
+    view.formatColumnItemHTML = function(item, width) {
+        return '<th width="' + width + '%">' + item + '</th>';
+    };
+
+    view.formatMessageHTML = function(message) {
+        var tableEntry = '<tr>';
+
+        tableEntry += view.formatMessageItemHTML(message.id);
+        tableEntry += view.formatMessageItemHTML(message.timeToComplete);
+        tableEntry += view.formatMessageItemHTML(message.requestType);
+        tableEntry += view.formatMessageItemHTML(message.url);
+        tableEntry += view.formatMessageItemHTML(message.requestStatus);
+        tableEntry += view.formatMessageItemHTML(message.completedStatus);
+
+        tableEntry += '</tr>';
+
+        return tableEntry;
+    };
+
+    view.formatMessageItemHTML = function(item) {
+        return '<td>' + item + '</td>';
     };
 
     return view;

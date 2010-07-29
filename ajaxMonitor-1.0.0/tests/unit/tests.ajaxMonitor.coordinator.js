@@ -112,7 +112,7 @@ should('fire messageReady', function() {
     mockModelMethod('addMessage');
     mockServiceMethod('getMessage');
 
-    tstMsgBus.fire.messageReady();
+    tstMsgBus.fire.messageCompleted();
 
     same(isModelFiredOn, true);
 });

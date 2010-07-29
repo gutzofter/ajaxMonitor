@@ -52,25 +52,11 @@ function NewAjaxMonitorView(msgBus) {
                 .append('<div id="activate_control" class="control right_position">Activate Not Initialized</div>');
 
         $('#monitor_messages')
-            .append('<table id="monitor_table" />');
+                .append('<table id="monitor_table" />');
 
-        $('<thead>' +
-                '<tr>' +
-                    '<th>Status</th><th>Completion Time mSec(s)</th>' +
-                '</tr>' +
-                '</thead>').appendTo('#monitor_table');
-        $('<tbody>' +
-                '<tr>' +
-//                    '<td>------</td><td>0</td>' +
-                '</tr>' +
-                '</tbody>').appendTo('#monitor_table');
-        $('<tfoot>' +
-                '<tr>' +
-                    '<th>Status</th><th>Completion Time mSec(s)</th>' +
-                '</tr>' +
-                '</tfoot>').appendTo('#monitor_table');
-
-
+        $('<thead>' + view.formatColumnHTML() + '</thead>').appendTo('#monitor_table');
+        $('<tbody>' + '<tr>' + '</tr>' + '</tbody>').appendTo('#monitor_table');
+        $('<tfoot>' + view.formatColumnHTML() + '</tfoot>').appendTo('#monitor_table');
 
         $('#monitor_container').hide();
 
@@ -115,11 +101,46 @@ function NewAjaxMonitorView(msgBus) {
     };
 
     view.newMessage = function(message) {
-        var tableEntry = '<tr>' +
-                '<td>' + message.completedStatus + '</td>' +
-                '<td>' + message.timeToComplete + '</td>';
-        
+        var tableEntry = view.formatMessageHTML(message);
         $('#monitor_table tbody').append(tableEntry);
+    };
+
+    view.formatColumnHTML = function() {
+        var columns = '<tr>';
+
+        columns += view.formatColumnItemHTML('Id', 10);
+        columns += view.formatColumnItemHTML('Completion Time mSec(s)', 10);
+        columns += view.formatColumnItemHTML('Request Type', 25);
+        columns += view.formatColumnItemHTML('Url', 25);
+        columns += view.formatColumnItemHTML('Request Status', 15);
+        columns += view.formatColumnItemHTML('Completion Status', 15);
+
+        columns += '</tr>';
+
+        return columns;
+    };
+
+    view.formatColumnItemHTML = function(item, width) {
+        return '<th width="' + width + '%">' + item + '</th>';
+    };
+
+    view.formatMessageHTML = function(message) {
+        var tableEntry = '<tr>';
+
+        tableEntry += view.formatMessageItemHTML(message.id);
+        tableEntry += view.formatMessageItemHTML(message.timeToComplete);
+        tableEntry += view.formatMessageItemHTML(message.requestType);
+        tableEntry += view.formatMessageItemHTML(message.url);
+        tableEntry += view.formatMessageItemHTML(message.requestStatus);
+        tableEntry += view.formatMessageItemHTML(message.completedStatus);
+
+        tableEntry += '</tr>';
+
+        return tableEntry;
+    };
+
+    view.formatMessageItemHTML = function(item) {
+        return '<td>' + item + '</td>';
     };
 
     return view;
@@ -135,7 +156,7 @@ function NewAjaxMonitorModel(msgBus) {
 
     model.initialize = function(initSettings) {
         settings = initSettings;
-        if (settings.maximize) {
+        if(settings.maximize) {
             msgBus.fire.maximize();
         }
         else {
@@ -156,7 +177,7 @@ function NewAjaxMonitorModel(msgBus) {
     };
 
     model.processActivation = function(shouldActivate) {
-        if (shouldActivate) {
+        if(shouldActivate) {
             msgBus.fire.activateService();
         }
         else {
@@ -173,7 +194,7 @@ function NewAjaxMonitorModel(msgBus) {
     };
 
     model.destroy = function() {
-
+        msgBus.fire.deactivateService();
     };
 
     model.addMessage = function(message) {
@@ -206,7 +227,13 @@ function NewStopWatch() {
     };
 
     stopWatch.elapsed = function() {
-        return stop - start;
+        var elapsedTime = 0;
+
+        elapsedTime = stop - start;
+        start = 0;
+        stop = 0;
+
+        return elapsedTime;
     };
 
     return stopWatch;
@@ -214,9 +241,13 @@ function NewStopWatch() {
 
 function NewAjaxMonitorService(msgBus, stopWatch) {
     var service = {};
-    var originalAjax = $.ajax;
+
     var ajaxMonitorSettings = {};
     var currentMessage = {};
+    var messageCount = 0;
+    var messageCache = [];
+
+    var originalAjax = $.ajax;
 
     service.activate = function() {
         service.wrapAjax();
@@ -230,8 +261,22 @@ function NewAjaxMonitorService(msgBus, stopWatch) {
 
     service.wrapAjax = function() {
         originalAjax = $.ajax;
+        if(originalAjax.isMonitoredCount) {
+            originalAjax.isMonitoredCount++;
+        }
+        else {
+            originalAjax.isMonitoredCount = 1;
+        }
 
         $.ajax = function(settings) {
+            messageCache[messageCount] = {
+                id:                 messageCount
+                ,requestType:       settings.type + ' [Monitored]'
+                ,completedStatus:   'unknown'
+                ,timeToComplete:    -1
+                ,url:               settings.url
+            };
+
             ajaxMonitorSettings = settings;
 
             var origComplete;
@@ -240,20 +285,21 @@ function NewAjaxMonitorService(msgBus, stopWatch) {
                 origComplete = settings.complete;
             }
 
-            settings.complete = service.monitorComplete(settings);
+            settings.complete = service.monitorComplete(settings.complete, messageCount);
 
             stopWatch.start();
-
+            messageCount++;
             originalAjax(settings);
         };
     };
 
-    service.monitorComplete = function(settings) {
-        var origComplete = function() {
+    service.monitorComplete = function(complete, messageIndex) {
+        var origComplete = function(request, status) {
+            return (request && status);
         };
 
-        if (settings.complete) {
-            origComplete = settings.complete;
+        if (complete) {
+            origComplete = complete;
         }
 
         return function(request, status) {
@@ -261,19 +307,35 @@ function NewAjaxMonitorService(msgBus, stopWatch) {
 
             stopWatch.stop();
 
-            currentMessage.completedStatus = status;
-            currentMessage.timeToComplete = stopWatch.elapsed();
-
-            msgBus.fire.messageReady();
+            currentMessage = messageCache[messageIndex];
+            if (currentMessage) {
+                currentMessage.requestStatus = 'completed';
+                currentMessage.completedStatus = status;
+                currentMessage.timeToComplete = stopWatch.elapsed();
+            }
+            else {
+                // unexpected completion of message this should throw an error, but it worked good in the unit test
+                currentMessage = {};
+                currentMessage.id = -1,
+                currentMessage.requestStatus = 'completed';
+                currentMessage.completedStatus = 'unexpected';
+                currentMessage.timeToComplete = -1;
+            }
+            msgBus.fire.messageCompleted();
         };
     };
 
     service.unwrapAjax = function() {
+        originalAjax.isMonitoredCount--;
         $.ajax = originalAjax;
     };
 
     service.getMessage = function() {
         return currentMessage;
+    };
+
+    service.isActiveCount = function() {
+        return originalAjax.isMonitoredCount;
     };
 
     return service;
@@ -333,7 +395,7 @@ function NewAjaxMonitorCoordinator(msgBus, model, service) {
         model.setNotActive();
     });
 
-    msgBus.when('messageReady', function() {
+    msgBus.when('messageCompleted', function() {
         var message = service.getMessage();
         model.addMessage(message);
     });
@@ -344,6 +406,70 @@ function NewAjaxMonitorCoordinator(msgBus, model, service) {
 
     return coordinator;
 }
+
+function NewAjaxMock(responseType, runTimes, responseData) {
+    var mock = {};
+    var originalAjax = $.ajax;
+    var executionCount = 0;
+
+    $.ajax = function(settings) {
+        if(executionCount < runTimes) {
+            if (settings.beforeSend) {
+                settings.beforeSend();
+            }
+            if (settings.success) {
+                settings.success(responseData);
+            }
+            if (settings.complete) {
+                if(responseType === 'success') {
+                    settings.complete(null, 'success');
+                }
+                else {
+                    settings.complete(null, 'error');
+                }
+            }
+            executionCount++;
+        }
+        else {
+            $.ajax = originalAjax;
+            $.ajax(settings);
+        }
+    };
+
+    mock.executionCount = function() {
+        return executionCount;
+    };
+
+    return mock;
+}
+
+function NewAjaxMonitorMock(settings, responseData) {
+    var monitorMock = {};
+
+    var defaultSettings = {
+        succes: true
+        ,runTimes: 1
+    };
+
+    var changedSettings = defaultSettings;
+    if (settings) {
+        changedSettings = $.extend({}, defaultSettings, settings);
+    }
+    var responseType = 'error';
+    if(changedSettings.success) {
+        responseType = 'success'
+    }
+
+    var ajaxMock = NewAjaxMock(responseType, changedSettings.runTimes, responseData);
+
+    monitorMock.executionCount = function() {
+        return ajaxMock.executionCount();
+    };
+
+    return monitorMock;
+}
+
+
 
 (function($) {
     var internalData = {};
@@ -357,10 +483,8 @@ function NewAjaxMonitorCoordinator(msgBus, model, service) {
     var coordinator = NewAjaxMonitorCoordinator(msgBus, model, service);
 
 
-    (function() {
-        internalData.version = '1.0.0';
-        internalData.plugInName = 'ajaxMonitor';
-    }());
+    internalData.version = '1.0.0';
+    internalData.plugInName = 'ajaxMonitor';
 
     $.fn.ajaxMonitor = function(settings) {
         var defaultSettings = {
@@ -371,7 +495,7 @@ function NewAjaxMonitorCoordinator(msgBus, model, service) {
         };
         consoleLog(internalData.plugInName + ' Version: ' + internalData.version + ' is initialized');
 
-        var changedSettings = defaultSettings;
+        var changedSettings = {};
         if (settings) {
             changedSettings = $.extend({}, defaultSettings, settings);
         }
