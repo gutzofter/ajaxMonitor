@@ -16,6 +16,8 @@ var isServiceFiredOn = false;
 var isViewFiredOn = false;
 var isModelFiredOn = false;
 
+function NullFn() {}
+
 function mockViewMethod(name) {
     isViewFiredOn = false;
     view[name] = function() {
@@ -59,12 +61,12 @@ function extend(a, b) {
     var newExtendedProperties = {};
     var prop;
 
-    for (prop in b) {
-        newExtendedProperties[prop] = b[prop];
-    }
-
     for (prop in a) {
         newExtendedProperties[prop] = a[prop];
+    }
+
+    for (prop in b) {
+        newExtendedProperties[prop] = b[prop];
     }
 
     return newExtendedProperties;

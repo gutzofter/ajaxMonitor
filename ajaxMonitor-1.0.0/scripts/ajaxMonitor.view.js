@@ -6,7 +6,6 @@
  * To change this template use File | Settings | File Templates.
  */
 
-
 function NewAjaxMonitorView(msgBus) {
     var view = {};
 
@@ -85,7 +84,8 @@ function NewAjaxMonitorView(msgBus) {
     view.formatColumnHTML = function() {
         var columns = '<tr>';
 
-        columns += view.formatColumnItemHTML('Id', 10);
+        columns += view.formatColumnItemHTML('Id', 5);
+        columns += view.formatColumnItemHTML('HTTP Status', 5);
         columns += view.formatColumnItemHTML('Completion Time mSec(s)', 10);
         columns += view.formatColumnItemHTML('Request Type', 25);
         columns += view.formatColumnItemHTML('Url', 25);
@@ -105,6 +105,7 @@ function NewAjaxMonitorView(msgBus) {
         var tableEntry = '<tr>';
 
         tableEntry += view.formatMessageItemHTML(message.id);
+        tableEntry += view.formatMessageItemHTML(message.statusHTTP);
         tableEntry += view.formatMessageItemHTML(message.timeToComplete);
         tableEntry += view.formatMessageItemHTML(message.requestType);
         tableEntry += view.formatMessageItemHTML(message.url);

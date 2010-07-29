@@ -99,8 +99,10 @@ module('service - ajax monitor functions', setupForCallbackFunctions);
 
 should('execute complete wrapper without function', function() {
     setFireEvent('messageCompleted');
+    var index = 0;
+    service.addMessage(index, null);
 
-    var complete = service.monitorComplete(null, 0);
+    var complete = service.monitorComplete(null, index);
     complete();
 
     same(isFired, true, 'message completed');
@@ -108,12 +110,14 @@ should('execute complete wrapper without function', function() {
 
 should('execute complete wrapper with function', function() {
     var completeIsExecuted = false;
+    var index = 0;
+    service.addMessage(index, null);
 
     setFireEvent('messageCompleted');
 
     var complete = service.monitorComplete(function() {
         completeIsExecuted = true;
-    }, 0);
+    }, index);
 
     complete();
 
@@ -123,6 +127,9 @@ should('execute complete wrapper with function', function() {
 
 should('get unexpected completion message', function() {
     setDummyEvent('messageCompleted');
+    var index = 0;
+    service.addMessage(index, null);
+
     var expectedMessage = {
         "id":               -1
         ,"requestStatus": 'completed'
@@ -130,18 +137,64 @@ should('get unexpected completion message', function() {
         ,"timeToComplete":  -1
     };
 
-    var complete = service.monitorComplete(function() {}, 0);
+    var complete = service.monitorComplete(NullFn, index);
 
     complete(null, 'success');
 
-    var message = service.getMessage();
+    var message = service.getCurrentMessage();
+
+    same(message, expectedMessage, 'message is ');
+});
+
+module('service - before send message', setupForCallbackFunctions);
+
+should('get beforeSend message', function() {
+    setDummyEvent('messageBeforeSent');
+    var index = 0;
+    service.addMessage(index, null);
+
+    var expectedMessage = {
+        "id":               -1
+        ,"requestStatus": 'beforeSend'
+        ,"completedStatus":  "unexpected"
+        ,"timeToComplete":  -1
+    };
+
+    var beforeSend = service.monitorBeforeSend(NullFn, index);
+
+    beforeSend(null);
+
+    var message = service.getCurrentMessage();
+
+    same(message, expectedMessage, 'message is ');
+});
+
+module('service - error message', setupForCallbackFunctions);
+
+should('get error message', function() {
+    setDummyEvent('messageError');
+    var index = 0;
+    service.addMessage(index, null);
+
+    var expectedMessage = {
+        "id":               -1
+        ,"requestStatus": 'error'
+        ,"completedStatus":  "unexpected"
+        ,"timeToComplete":  -1
+    };
+
+    var error = service.monitorError(NullFn, index, null);
+
+    error(null);
+
+    var message = service.getCurrentMessage();
 
     same(message, expectedMessage, 'message is ');
 });
 
 var mock = {};
 
-var setupForCompletedMessages = {
+var setupForAllMessages = {
     setup: function() {
         tstMsgBus = NewMessageBus();
         service = NewAjaxMonitorService(tstMsgBus, mockStopWatch);
@@ -161,7 +214,7 @@ var setupForCompletedMessages = {
     }
 };
 
-module('service - complete messages', setupForCompletedMessages);
+module('service - complete request messages', setupForAllMessages);
 
 should('get completion message', function() {
     setDummyEvent('messageCompleted');
@@ -172,11 +225,12 @@ should('get completion message', function() {
         ,"timeToComplete":      100
         ,"requestType":         "POST [Monitored]"
         ,"url":                 '../../server_side.php'
+        ,"statusHTTP":          200
     };
 
     getAjaxServerRequest({});
 
-    var message = service.getMessage();
+    var message = service.getCurrentMessage();
 
     same(message, expectedMessage, 'message is ');
 });
@@ -190,7 +244,7 @@ should('get second completion message', function() {
     getAjaxServerRequest({});
     getAjaxServerRequest({});
 
-    var message = service.getMessage();
+    var message = service.getCurrentMessage();
 
     same(message.id, expectedMessage.id, 'message id is ');
 });

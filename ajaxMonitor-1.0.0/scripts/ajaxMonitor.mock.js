@@ -10,21 +10,25 @@ function NewAjaxMock(responseType, runTimes, responseData) {
     var mock = {};
     var originalAjax = $.ajax;
     var executionCount = 0;
+    var xhr = { status: 200 };
 
     $.ajax = function(settings) {
         if(executionCount < runTimes) {
             if (settings.beforeSend) {
                 settings.beforeSend();
             }
+            if(settings.error) {
+                settings.error(xhr, responseData);
+            }
             if (settings.success) {
                 settings.success(responseData);
             }
             if (settings.complete) {
                 if(responseType === 'success') {
-                    settings.complete(null, 'success');
+                    settings.complete(xhr, 'success');
                 }
                 else {
-                    settings.complete(null, 'error');
+                    settings.complete(xhr, 'error');
                 }
             }
             executionCount++;

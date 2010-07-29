@@ -108,7 +108,8 @@ function NewAjaxMonitorView(msgBus) {
     view.formatColumnHTML = function() {
         var columns = '<tr>';
 
-        columns += view.formatColumnItemHTML('Id', 10);
+        columns += view.formatColumnItemHTML('Id', 5);
+        columns += view.formatColumnItemHTML('HTTP Status', 5);
         columns += view.formatColumnItemHTML('Completion Time mSec(s)', 10);
         columns += view.formatColumnItemHTML('Request Type', 25);
         columns += view.formatColumnItemHTML('Url', 25);
@@ -128,6 +129,7 @@ function NewAjaxMonitorView(msgBus) {
         var tableEntry = '<tr>';
 
         tableEntry += view.formatMessageItemHTML(message.id);
+        tableEntry += view.formatMessageItemHTML(message.statusHTTP);
         tableEntry += view.formatMessageItemHTML(message.timeToComplete);
         tableEntry += view.formatMessageItemHTML(message.requestType);
         tableEntry += view.formatMessageItemHTML(message.url);
@@ -239,15 +241,35 @@ function NewStopWatch() {
     return stopWatch;
 }
 
+function NewNoMessageInCache(index) {
+    return {
+        name: 'NoMessage'
+        ,message: 'No Message with index of [' + index + '] exists'
+    };
+}
+
 function NewAjaxMonitorService(msgBus, stopWatch) {
     var service = {};
 
     var ajaxMonitorSettings = {};
     var currentMessage = {};
-    var messageCount = 0;
-    var messageCache = [];
+    var newMessageIndex = 0;
+    var messageCache = {};
 
     var originalAjax = $.ajax;
+
+    service.getMessage = function(index) {
+        var message = messageCache[index];
+        if(message === undefined) {
+            throw NewNoMessageInCache(index);
+        }
+
+        return message;
+    };
+
+    service.addMessage = function(index, message) {
+        messageCache[index] = message;
+    };
 
     service.activate = function() {
         service.wrapAjax();
@@ -269,27 +291,94 @@ function NewAjaxMonitorService(msgBus, stopWatch) {
         }
 
         $.ajax = function(settings) {
-            messageCache[messageCount] = {
-                id:                 messageCount
-                ,requestType:       settings.type + ' [Monitored]'
-                ,completedStatus:   'unknown'
-                ,timeToComplete:    -1
-                ,url:               settings.url
-            };
-
             ajaxMonitorSettings = settings;
 
-            var origComplete;
+            service.addMessage(newMessageIndex, {
+                id:                 newMessageIndex
+                ,requestType:       ajaxMonitorSettings.type + ' [Monitored]'
+                ,completedStatus:   'unknown'
+                ,timeToComplete:    -1
+                ,url:               ajaxMonitorSettings.url
+            });
 
-            if (settings.complete) {
-                origComplete = settings.complete;
-            }
+            ajaxMonitorSettings.monitorBeforeSend = service.monitorBeforeSend(ajaxMonitorSettings.beforeSend, newMessageIndex);
+            ajaxMonitorSettings.monitorError = service.monitorError(ajaxMonitorSettings.error, newMessageIndex);
+            ajaxMonitorSettings.monitorSuccess = service.monitorSuccess(ajaxMonitorSettings.success, newMessageIndex);
+            ajaxMonitorSettings.complete = service.monitorComplete(ajaxMonitorSettings.complete, newMessageIndex);
 
-            settings.complete = service.monitorComplete(settings.complete, messageCount);
+            newMessageIndex++;
 
             stopWatch.start();
-            messageCount++;
-            originalAjax(settings);
+            originalAjax(ajaxMonitorSettings);
+        };
+    };
+
+    service.monitorSuccess = function(data, textStatus, request) {
+
+        return function(data, textStatus, request) {
+
+        }
+    };
+
+
+
+    service.monitorError = function(error, messageIndex) {
+        var origError = function(request, status, errorThrown) {
+            return (request && status && errorThrown);
+        };
+
+        if(error) {
+            origError = error;
+        }
+
+        return function(request, status, errorThrown) {
+            origError(request, status, errorThrown);
+
+            currentMessage = service.getMessage((messageIndex));
+
+            if(currentMessage) {
+                currentMessage.requestStatus = 'error';
+            }
+            else {
+                currentMessage = {};
+                currentMessage.id = -1,
+                currentMessage.requestStatus = 'error';
+                currentMessage.completedStatus = 'unexpected';
+                currentMessage.timeToComplete = -1;
+            }
+
+            service.addMessage(messageIndex, currentMessage);
+            msgBus.fire.messageError();
+        }
+    };
+
+    service.monitorBeforeSend = function(beforeSend, messageIndex) {
+        var origBeforeSend = function(request) {
+            return (request === request);
+        };
+
+        if(beforeSend) {
+            origBeforeSend = beforeSend;
+        }
+
+        return function(request) {
+            origBeforeSend(request);
+
+            currentMessage = service.getMessage(messageIndex);
+
+            if(currentMessage) {
+                currentMessage.requestStatus = 'beforeSend';
+            }
+            else {
+                currentMessage = {};
+                currentMessage.id = -1,
+                currentMessage.requestStatus = 'beforeSend';
+                currentMessage.completedStatus = 'unexpected';
+                currentMessage.timeToComplete = -1;
+            }
+
+            service.addMessage(messageIndex, currentMessage);
+            msgBus.fire.messageBeforeSent();
         };
     };
 
@@ -307,11 +396,13 @@ function NewAjaxMonitorService(msgBus, stopWatch) {
 
             stopWatch.stop();
 
-            currentMessage = messageCache[messageIndex];
+            currentMessage = service.getMessage(messageIndex);
+
             if (currentMessage) {
                 currentMessage.requestStatus = 'completed';
                 currentMessage.completedStatus = status;
                 currentMessage.timeToComplete = stopWatch.elapsed();
+                currentMessage.statusHTTP = request.status
             }
             else {
                 // unexpected completion of message this should throw an error, but it worked good in the unit test
@@ -321,6 +412,9 @@ function NewAjaxMonitorService(msgBus, stopWatch) {
                 currentMessage.completedStatus = 'unexpected';
                 currentMessage.timeToComplete = -1;
             }
+
+            service.addMessage(messageIndex, currentMessage);
+
             msgBus.fire.messageCompleted();
         };
     };
@@ -330,7 +424,7 @@ function NewAjaxMonitorService(msgBus, stopWatch) {
         $.ajax = originalAjax;
     };
 
-    service.getMessage = function() {
+    service.getCurrentMessage = function() {
         return currentMessage;
     };
 
@@ -396,7 +490,7 @@ function NewAjaxMonitorCoordinator(msgBus, model, service) {
     });
 
     msgBus.when('messageCompleted', function() {
-        var message = service.getMessage();
+        var message = service.getCurrentMessage();
         model.addMessage(message);
     });
 
@@ -411,21 +505,25 @@ function NewAjaxMock(responseType, runTimes, responseData) {
     var mock = {};
     var originalAjax = $.ajax;
     var executionCount = 0;
+    var xhr = { status: 200 };
 
     $.ajax = function(settings) {
         if(executionCount < runTimes) {
             if (settings.beforeSend) {
                 settings.beforeSend();
             }
+            if(settings.error) {
+                settings.error(xhr, responseData);
+            }
             if (settings.success) {
                 settings.success(responseData);
             }
             if (settings.complete) {
                 if(responseType === 'success') {
-                    settings.complete(null, 'success');
+                    settings.complete(xhr, 'success');
                 }
                 else {
-                    settings.complete(null, 'error');
+                    settings.complete(xhr, 'error');
                 }
             }
             executionCount++;

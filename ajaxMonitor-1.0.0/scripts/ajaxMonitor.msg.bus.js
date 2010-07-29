@@ -12,7 +12,7 @@ function NewEventExistsException(eventName) {
         ,message: 'An event by the name of [' + eventName + '] already exists. Try another name.'
     }
 }
-
+ 
 function NewMessageBus() {
     var msgBus = {};
 

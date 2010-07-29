@@ -110,7 +110,7 @@ should('fire isDeactivated', function() {
 
 should('fire messageReady', function() {
     mockModelMethod('addMessage');
-    mockServiceMethod('getMessage');
+    mockServiceMethod('getCurrentMessage');
 
     tstMsgBus.fire.messageCompleted();
 

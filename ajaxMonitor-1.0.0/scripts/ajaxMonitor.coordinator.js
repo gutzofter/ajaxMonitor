@@ -26,7 +26,7 @@ function NewAjaxMonitorCoordinator(msgBus, model, service) {
     });
 
     msgBus.when('messageCompleted', function() {
-        var message = service.getMessage();
+        var message = service.getCurrentMessage();
         model.addMessage(message);
     });
 
