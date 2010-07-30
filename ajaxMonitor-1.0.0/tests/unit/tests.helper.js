@@ -12,6 +12,9 @@ var tstMsgBus = {};
 var service = {};
 
 var isFired = false;
+
+var eventFired = {};
+
 var isServiceFiredOn = false;
 var isViewFiredOn = false;
 var isModelFiredOn = false;
@@ -45,15 +48,17 @@ function removeEvent(name) {
     }
 }
 
-function setDummyEvent(name) {
+function enableNullEvent(name) {
     tstMsgBus.when(name, function() {
     });
 }
 
-function setFireEvent(name) {
+function enableActionEvent(name) {
+    eventFired[name] = false;
     isFired = false;
     tstMsgBus.when(name, function() {
         isFired = true;
+        eventFired[name] = true;
     });
 }
 

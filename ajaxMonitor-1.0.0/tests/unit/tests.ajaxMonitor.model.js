@@ -34,8 +34,8 @@ var setup = {
 module('model - initialize', setup);
 
 should('fire minimize default', function() {
-    setFireEvent('minimize');
-    setDummyEvent('deactivateService');
+    enableActionEvent('minimize');
+    enableNullEvent('deactivateService');
     model.initialize(NewSettings({
         maximize: false
     }));
@@ -43,8 +43,8 @@ should('fire minimize default', function() {
 });
 
 should('fire maximize from settings', function() {
-    setFireEvent('maximize');
-    setDummyEvent('deactivateService');
+    enableActionEvent('maximize');
+    enableNullEvent('deactivateService');
     model.initialize(NewSettings({
         maximize: true
     }));
@@ -53,8 +53,8 @@ should('fire maximize from settings', function() {
 });
 
 should('fire activate from settings', function() {
-    setDummyEvent('minimize');
-    setFireEvent('activateService');
+    enableNullEvent('minimize');
+    enableActionEvent('activateService');
     model.initialize(NewSettings({
         monitorActive: true
     }));
@@ -63,8 +63,8 @@ should('fire activate from settings', function() {
 });
 
 should('fire deactivate from settings', function() {
-    setDummyEvent('minimize');
-    setFireEvent('deactivateService');
+    enableNullEvent('minimize');
+    enableActionEvent('deactivateService');
     model.initialize(NewSettings({
         monitorActive: false
     }));
@@ -73,44 +73,44 @@ should('fire deactivate from settings', function() {
 });
 
 should('fire deactivate from toggle activate', function() {
-    setDummyEvent('minimize');
-    setDummyEvent('activateService');
+    enableNullEvent('minimize');
+    enableNullEvent('activateService');
     model.initialize(NewSettings({
         monitorActive: true
     }));
     
-    setFireEvent('deactivateService');
+    enableActionEvent('deactivateService');
     model.toggleActivation();
 
     same(isFired, true, 'deactivate');
 });
 
 should('fire activate from toggle activate', function() {
-    setDummyEvent('minimize');
-    setDummyEvent('activateService');
+    enableNullEvent('minimize');
+    enableNullEvent('activateService');
     model.initialize(NewSettings({
         monitorActive: true
     }));
 
-    setDummyEvent('deactivateService');
+    enableNullEvent('deactivateService');
     model.toggleActivation();
 
     removeEvent('activateService');
-    setFireEvent('activateService');
+    enableActionEvent('activateService');
     model.toggleActivation();
 
     same(isFired, true, 'deactivate');
 });
 
 should('fire activate from set active', function() {
-    setFireEvent('activate');
+    enableActionEvent('activate');
     model.setActive();
 
     same(isFired, true, 'fire activate');
 });
 
 should('fire deactivate from set not active', function() {
-    setFireEvent('deactivate');
+    enableActionEvent('deactivate');
     model.setNotActive();
 
     same(isFired, true, 'fire deactivate');
@@ -118,7 +118,7 @@ should('fire deactivate from set not active', function() {
 
 should('fire added message', function() {
     var msg = { "completedStatus": "success" };
-    setFireEvent('newMessage');
+    enableActionEvent('newMessage');
     model.addMessage(msg);
     var actualMsg = model.currentMessage();
 
@@ -127,7 +127,7 @@ should('fire added message', function() {
 });
 
 should('fire deactivate service from set not active', function() {
-    setFireEvent('deactivateService');
+    enableActionEvent('deactivateService');
     model.destroy();
 
     same(isFired, true, 'fire deactivate service');

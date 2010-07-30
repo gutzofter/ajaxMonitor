@@ -88,34 +88,69 @@ function NewAjaxMonitorService(msgBus, stopWatch) {
         $.ajax = function(settings) {
             ajaxMonitorSettings = settings;
 
-            service.addMessage(newMessageIndex, {
-                id:                 newMessageIndex
-                ,requestType:       ajaxMonitorSettings.type + ' [Monitored]'
-                ,completedStatus:   'unknown'
-                ,timeToComplete:    -1
-                ,url:               ajaxMonitorSettings.url
-            });
-
-            ajaxMonitorSettings.monitorBeforeSend = service.monitorBeforeSend(ajaxMonitorSettings.beforeSend, newMessageIndex);
-            ajaxMonitorSettings.monitorError = service.monitorError(ajaxMonitorSettings.error, newMessageIndex);
-            ajaxMonitorSettings.monitorSuccess = service.monitorSuccess(ajaxMonitorSettings.success, newMessageIndex);
+            ajaxMonitorSettings.beforeSend = service.monitorBeforeSend(ajaxMonitorSettings.beforeSend, newMessageIndex);
+            ajaxMonitorSettings.error = service.monitorError(ajaxMonitorSettings.error, newMessageIndex);
+            ajaxMonitorSettings.success = service.monitorSuccess(ajaxMonitorSettings.success, newMessageIndex);
             ajaxMonitorSettings.complete = service.monitorComplete(ajaxMonitorSettings.complete, newMessageIndex);
 
-            newMessageIndex++;
 
-            stopWatch.start();
-            originalAjax(ajaxMonitorSettings);
+            if(ajaxMonitorSettings.mock) {
+                var mockAjax = NewAjaxMock('success', 'ajaxMonitor Mocker');
+                service.addMessage(newMessageIndex, {
+                    id:                 newMessageIndex
+                    ,requestType:       ajaxMonitorSettings.type + ' [Monitored - Mock]'
+                    ,completedStatus:   'unknown'
+                    ,timeToComplete:    -1
+                    ,url:               ajaxMonitorSettings.url
+                });
+
+                mockAjax(ajaxMonitorSettings);
+            }
+            else {
+                service.addMessage(newMessageIndex, {
+                    id:                 newMessageIndex
+                    ,requestType:       ajaxMonitorSettings.type + ' [Monitored]'
+                    ,completedStatus:   'unknown'
+                    ,timeToComplete:    -1
+                    ,url:               ajaxMonitorSettings.url
+                });
+
+                originalAjax(ajaxMonitorSettings);
+            }
+
+            newMessageIndex++;
         };
     };
 
-    service.monitorSuccess = function(data, textStatus, request) {
+    service.monitorSuccess = function(success, messageIndex) {
+        var origSuccess = function(data, textStatus, request) {
+            return (data && textStatus && request);
+        };
+
+        if(success) {
+            origSuccess = success;
+        }
 
         return function(data, textStatus, request) {
+            origSuccess(data, textStatus, request);
 
+            currentMessage = service.getMessage((messageIndex));
+
+            if(currentMessage) {
+                currentMessage.requestStatus = 'success';
+            }
+            else {
+                currentMessage = {};
+                currentMessage.id = -1,
+                currentMessage.requestStatus = 'success';
+                currentMessage.completedStatus = 'unexpected';
+                currentMessage.timeToComplete = -1;
+            }
+
+            service.addMessage(messageIndex, currentMessage);
+            msgBus.fire.messageSuccess();
         }
     };
-
-
 
     service.monitorError = function(error, messageIndex) {
         var origError = function(request, status, errorThrown) {
@@ -157,6 +192,7 @@ function NewAjaxMonitorService(msgBus, stopWatch) {
         }
 
         return function(request) {
+            stopWatch.start();
             origBeforeSend(request);
 
             currentMessage = service.getMessage(messageIndex);
@@ -173,7 +209,7 @@ function NewAjaxMonitorService(msgBus, stopWatch) {
             }
 
             service.addMessage(messageIndex, currentMessage);
-            msgBus.fire.messageBeforeSent();
+            msgBus.fire.messageBeforeSend();
         };
     };
 

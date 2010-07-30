@@ -11,7 +11,7 @@
 }
 .ajax_monitor_container {
     width: 900px;
-    margin: 10px auto;
+    margin: 10px;
     padding: 0;
 }
 
@@ -20,6 +20,15 @@
     margin: 10px 36px;
     padding: 0;
     border: 4px solid  #4E6CA3;
+}
+
+#message_container {
+    
+}
+
+#pretty {
+    margin: 10px auto;
+    
 }
 
 #ajax_monitor {

@@ -6,31 +6,43 @@
  * To change this template use File | Settings | File Templates.
  */
 
-function NewAjaxMock(responseType, runTimes, responseData) {
-    var mock = {};
-    var originalAjax = $.ajax;
-    var executionCount = 0;
+function NewAjaxMock(responseType, responseData) {
     var xhr = { status: 200 };
+    var textStatus = 'success';
 
-    $.ajax = function(settings) {
-        if(executionCount < runTimes) {
-            if (settings.beforeSend) {
-                settings.beforeSend();
-            }
-            if(settings.error) {
-                settings.error(xhr, responseData);
-            }
+    return function(settings) {
+        if (settings.beforeSend) {
+            settings.beforeSend();
+        }
+        if (responseType === 'success') {
             if (settings.success) {
                 settings.success(responseData);
             }
-            if (settings.complete) {
-                if(responseType === 'success') {
-                    settings.complete(xhr, 'success');
-                }
-                else {
-                    settings.complete(xhr, 'error');
-                }
+        }
+        else {
+            if (settings.error) {
+                xhr.status = 404;
+                textStatus = 'error';
+                settings.error(xhr, responseData);
             }
+        }
+
+        if (settings.complete) {
+            settings.complete(xhr, textStatus);
+        }
+    }
+}
+
+function NewAjaxMocker(responseType, runTimes, responseData) {
+    var mock = {};
+    var originalAjax = $.ajax;
+    var executionCount = 0;
+
+
+    $.ajax = function(settings) {
+        if (mock.executionCount() < runTimes) {
+            var mockedAjax = NewAjaxMock(responseType, responseData);
+            mockedAjax(settings);
             executionCount++;
         }
         else {
@@ -59,11 +71,11 @@ function NewAjaxMonitorMock(settings, responseData) {
         changedSettings = $.extend({}, defaultSettings, settings);
     }
     var responseType = 'error';
-    if(changedSettings.success) {
+    if (changedSettings.success) {
         responseType = 'success'
     }
 
-    var ajaxMock = NewAjaxMock(responseType, changedSettings.runTimes, responseData);
+    var ajaxMock = NewAjaxMocker(responseType, changedSettings.runTimes, responseData);
 
     monitorMock.executionCount = function() {
         return ajaxMock.executionCount();

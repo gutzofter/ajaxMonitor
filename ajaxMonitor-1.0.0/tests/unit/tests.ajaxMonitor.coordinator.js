@@ -108,7 +108,7 @@ should('fire isDeactivated', function() {
     same(isModelFiredOn, true);
 });
 
-should('fire messageReady', function() {
+should('fire message completed', function() {
     mockModelMethod('addMessage');
     mockServiceMethod('getCurrentMessage');
 
@@ -116,4 +116,32 @@ should('fire messageReady', function() {
 
     same(isModelFiredOn, true);
 });
+
+should('fire message before send', function() {
+    mockModelMethod('addMessage');
+    mockServiceMethod('getCurrentMessage');
+
+    tstMsgBus.fire.messageBeforeSend();
+
+    same(isModelFiredOn, true);
+});
+
+should('fire message error', function() {
+    mockModelMethod('addMessage');
+    mockServiceMethod('getCurrentMessage');
+
+    tstMsgBus.fire.messageError();
+
+    same(isModelFiredOn, true);
+});
+
+should('fire message success', function() {
+    mockModelMethod('addMessage');
+    mockServiceMethod('getCurrentMessage');
+
+    tstMsgBus.fire.messageSuccess();
+
+    same(isModelFiredOn, true);
+});
+
 

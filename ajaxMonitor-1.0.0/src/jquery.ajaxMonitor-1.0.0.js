@@ -313,10 +313,33 @@ function NewAjaxMonitorService(msgBus, stopWatch) {
         };
     };
 
-    service.monitorSuccess = function(data, textStatus, request) {
+    service.monitorSuccess = function(success, messageIndex) {
+        var origSuccess = function(data, textStatus, request) {
+            return (data && textStatus && request);
+        };
+
+        if(success) {
+            origSuccess = success;
+        }
 
         return function(data, textStatus, request) {
+            origSuccess(data, textStatus, request);
 
+            currentMessage = service.getMessage((messageIndex));
+
+            if(currentMessage) {
+                currentMessage.requestStatus = 'success';
+            }
+            else {
+                currentMessage = {};
+                currentMessage.id = -1,
+                currentMessage.requestStatus = 'success';
+                currentMessage.completedStatus = 'unexpected';
+                currentMessage.timeToComplete = -1;
+            }
+
+            service.addMessage(messageIndex, currentMessage);
+            msgBus.fire.messageSuccess();
         }
     };
 
@@ -494,13 +517,27 @@ function NewAjaxMonitorCoordinator(msgBus, model, service) {
         model.addMessage(message);
     });
 
+    msgBus.when('messageBeforeSent', function() {
+        var message = service.getCurrentMessage();
+        model.addMessage(message);
+    });
+
+    msgBus.when('messageError', function() {
+        var message = service.getCurrentMessage();
+        model.addMessage(message);
+    });
+
+    msgBus.when('messageSuccess', function() {
+        var message = service.getCurrentMessage();
+        model.addMessage(message);
+    });
+
     coordinator.run = function() {
 
     };
 
     return coordinator;
 }
-
 function NewAjaxMock(responseType, runTimes, responseData) {
     var mock = {};
     var originalAjax = $.ajax;

@@ -57,7 +57,7 @@ should('verify active', function() {
 });
 
 should('activate when [activate] button is clicked', function() {
-    setFireEvent('toggleActivation');
+    enableActionEvent('toggleActivation');
     $('#activate_control').click();
 
     same(isFired, true, 'activate toggle');

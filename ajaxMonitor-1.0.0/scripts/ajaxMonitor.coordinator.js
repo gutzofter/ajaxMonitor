@@ -30,6 +30,21 @@ function NewAjaxMonitorCoordinator(msgBus, model, service) {
         model.addMessage(message);
     });
 
+    msgBus.when('messageBeforeSend', function() {
+        var message = service.getCurrentMessage();
+        model.addMessage(message);
+    });
+
+    msgBus.when('messageError', function() {
+        var message = service.getCurrentMessage();
+        model.addMessage(message);
+    });
+
+    msgBus.when('messageSuccess', function() {
+        var message = service.getCurrentMessage();
+        model.addMessage(message);
+    });
+
     coordinator.run = function() {
 
     };

@@ -23,22 +23,55 @@
         $(function() {
             var $ajaxMonitor = $('#ajax_monitor').ajaxMonitor({maximize: true, monitorActive: true});
 
-            $('#get_message').click(function() {
-                $.ajax({
+            var ajaxSettings = {
                     type:       'GET'
+                    ,mock:      false
                     ,url:        'server_side.php'
                     ,async:      false
                     ,dataType:   'json'
                     ,beforeSend: function() {
                         $('#message_container').html('Starting Request');
                     }
+                    ,complete:  function(request, status) {
+                        if(status === 'error') {
+                            $('#message_container').html('The HTTP code is: ' + request.status);
+                        }
+                    }
                     ,success:    function(response) {
                         if (response.status === 'success') {
                             $('#message_container').html(response.message);
                         }
                     }
-                });
+                };
+
+            var ajaxMockSettings = {
+                    type:       'GET'
+                    ,mock:      true
+                    ,url:        'server_side.php'
+                    ,async:      false
+                    ,dataType:   'json'
+                    ,beforeSend: function() {
+                        $('#message_container').html('Starting Request');
+                    }
+                    ,complete:  function(request, status) {
+                        if(status === 'error') {
+                            $('#message_container').html('The HTTP code is: ' + request.status);
+                        }
+                    }
+                    ,success:    function(response) {
+                        if (response.status === 'success') {
+                            $('#message_container').html(response.message);
+                        }
+                    }
+                };
+
+            $('#get_message_ajax').click(function() {
+                $.ajax(ajaxSettings);
             });
+            $('#get_message_mock').click(function() {
+                $.ajax(ajaxMockSettings);
+            });
+
         });
 
     </script>
@@ -46,7 +79,8 @@
 </head>
 <body>
     <div id="pretty">
-        <h1><span id="get_message" class="ajax_monitor_control">Ajax Testing</span></h1>
+        <h1><span id="get_message_ajax" class="ajax_monitor_control">Ajax Monitor Testing</span></h1>
+        <h1><span id="get_message_mock" class="ajax_monitor_control">Ajax Monitor Mock Testing</span></h1>
 
         <div class="ajax_monitor_container">
             <div class="ajax_monitor_section">

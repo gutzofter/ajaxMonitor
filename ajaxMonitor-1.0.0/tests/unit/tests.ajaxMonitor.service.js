@@ -5,11 +5,31 @@
  * Time: 10:25:13 AM
  * To change this template use File | Settings | File Templates.
  */
-var mockStopWatch = {
-    start: function() {}
-    ,stop: function() {}
-    ,elapsed: function() { return 100; }
-};
+function NewMockStopWatch() {
+    var watch = {};
+    var start = 101;
+    var stop = 0;
+
+    watch.start = function() {
+        start = 0;
+    };
+
+    watch.stop = function() {
+        stop = 100;
+    };
+
+    watch.elapsed = function() {
+        var eStop = stop;
+        var eStart = start;
+        stop = 101;
+        start = 0;
+        return eStop - eStart;
+    };
+
+    return watch;
+}
+
+var mockStopWatch = NewMockStopWatch();
 
 var setup = {
     setup: function() {
@@ -18,7 +38,7 @@ var setup = {
     }
     ,teardown: function() {
         removeEvent('isDeactivated');
-        setDummyEvent('isDeactivated');
+        enableNullEvent('isDeactivated');
         service.deactivate();
     }
 };
@@ -26,13 +46,13 @@ var setup = {
 module('service', setup);
 
 should('fire is activated', function() {
-    setFireEvent('isActivated');
+    enableActionEvent('isActivated');
     service.activate();
     same(isFired, true, 'is activated');
 });
 
 should('fire is deactivated', function() {
-    setFireEvent('isDeactivated');
+    enableActionEvent('isDeactivated');
     service.deactivate();
     same(isFired, true, 'is deactivated');
 });
@@ -52,8 +72,8 @@ should('execute ajax request', function() {
     var success = false;
     var completedStatus = '';
 
-    setDummyEvent('isActivated');
-    setDummyEvent('messageCompleted');
+    enableNullEvent('isActivated');
+    enableNullEvent('messageCompleted');
     service.activate();
 
     var serverResponse = { status: 'success'};
@@ -98,7 +118,7 @@ var setupForCallbackFunctions = {
 module('service - ajax monitor functions', setupForCallbackFunctions);
 
 should('execute complete wrapper without function', function() {
-    setFireEvent('messageCompleted');
+    enableActionEvent('messageCompleted');
     var index = 0;
     service.addMessage(index, null);
 
@@ -113,7 +133,7 @@ should('execute complete wrapper with function', function() {
     var index = 0;
     service.addMessage(index, null);
 
-    setFireEvent('messageCompleted');
+    enableActionEvent('messageCompleted');
 
     var complete = service.monitorComplete(function() {
         completeIsExecuted = true;
@@ -126,7 +146,7 @@ should('execute complete wrapper with function', function() {
 });
 
 should('get unexpected completion message', function() {
-    setDummyEvent('messageCompleted');
+    enableNullEvent('messageCompleted');
     var index = 0;
     service.addMessage(index, null);
 
@@ -149,7 +169,7 @@ should('get unexpected completion message', function() {
 module('service - before send message', setupForCallbackFunctions);
 
 should('get beforeSend message', function() {
-    setDummyEvent('messageBeforeSent');
+    enableNullEvent('messageBeforeSend');
     var index = 0;
     service.addMessage(index, null);
 
@@ -172,7 +192,7 @@ should('get beforeSend message', function() {
 module('service - error message', setupForCallbackFunctions);
 
 should('get error message', function() {
-    setDummyEvent('messageError');
+    enableNullEvent('messageError');
     var index = 0;
     service.addMessage(index, null);
 
@@ -192,6 +212,27 @@ should('get error message', function() {
     same(message, expectedMessage, 'message is ');
 });
 
+should('get success message', function() {
+    enableNullEvent('messageSuccess');
+    var index = 0;
+    service.addMessage(index, null);
+
+    var expectedMessage = {
+        "id":               -1
+        ,"requestStatus": 'success'
+        ,"completedStatus":  "unexpected"
+        ,"timeToComplete":  -1
+    };
+
+    var success = service.monitorSuccess(NullFn, index, null);
+
+    success(null);
+
+    var message = service.getCurrentMessage();
+
+    same(message, expectedMessage, 'message is ');
+});
+
 var mock = {};
 
 var setupForAllMessages = {
@@ -202,7 +243,7 @@ var setupForAllMessages = {
         mock = NewAjaxMonitorMock(
         {
             success: true
-            ,runTimes: 1
+            ,runTimes: 100
         }, serverResponse);
 
         service.wrapAjax();
@@ -217,7 +258,10 @@ var setupForAllMessages = {
 module('service - complete request messages', setupForAllMessages);
 
 should('get completion message', function() {
-    setDummyEvent('messageCompleted');
+    enableActionEvent('messageBeforeSend');
+    enableActionEvent('messageSuccess');
+    enableActionEvent('messageCompleted');
+
     var expectedMessage = {
         "id":                   0
         ,"requestStatus":       "completed"
@@ -233,10 +277,15 @@ should('get completion message', function() {
     var message = service.getCurrentMessage();
 
     same(message, expectedMessage, 'message is ');
+    same(eventFired.messageBeforeSend, true, 'before sent event fired');
+    same(eventFired.messageSuccess, true, 'sucess event fired');
+    same(eventFired.messageCompleted, true, 'complete event fired');
 });
 
 should('get second completion message', function() {
-    setDummyEvent('messageCompleted');
+    enableNullEvent('messageBeforeSend');
+    enableNullEvent('messageSuccess');
+    enableNullEvent('messageCompleted');
     var expectedMessage = {
         "id":               1
     };
@@ -249,8 +298,73 @@ should('get second completion message', function() {
     same(message.id, expectedMessage.id, 'message id is ');
 });
 
+should('validate that timing is not getting mangled', function() {
+    enableNullEvent('messageBeforeSend');
+    enableNullEvent('messageSuccess');
+    enableNullEvent('messageCompleted');
+    var message = {};
+
+    var expectedMessage = {
+        "timeToComplete": 100
+    };
+
+    getAjaxServerRequest({});
+    message = service.getCurrentMessage();
+    same(message.timeToComplete, expectedMessage.timeToComplete, 'message id is ');
+
+    getAjaxServerRequest({});
+    message = service.getCurrentMessage();
+
+    same(message.timeToComplete, expectedMessage.timeToComplete, 'message id is ');
+});
+
 should('get wrappped count', function() {
     same(service.isActiveCount(), 1, 'service is activated count');
+});
+
+var setupForMockMessages = {
+    setup: function() {
+        tstMsgBus = NewMessageBus();
+        service = NewAjaxMonitorService(tstMsgBus, mockStopWatch);
+        service.wrapAjax();
+    }
+    ,teardown: function() {
+        service.unwrapAjax();
+        //'makes sure that global space shows that monitor is not wrapping ***** this is very critical *****'
+        same(service.isActiveCount(), 0, 'service is deactivated all wrapping is gone');
+    }
+};
+
+module('Service - mock capabilities', setupForMockMessages);
+
+should('have standard monitored request with mocking on request being false', function() {
+    enableNullEvent('messageBeforeSend');
+    enableNullEvent('messageSuccess');
+    enableNullEvent('messageCompleted');
+
+    var expectedMessage = {
+        "requestType":         "POST [Monitored]"
+        ,"timeToComplete":      100
+    };
+
+    getAjaxServerRequest({ mock: false });
+    var message = service.getCurrentMessage();
+    same(message.requestType, expectedMessage.requestType);
+    same(message.timeToComplete, expectedMessage.timeToComplete);
+});
+
+should('mock all monitored request', function() {
+    enableNullEvent('messageBeforeSend');
+    enableNullEvent('messageSuccess');
+    enableNullEvent('messageCompleted');
+
+    var expectedMessage = {
+        "requestType":         "POST [Monitored - Mock]"
+    };
+
+    getAjaxServerRequest({ mock: true });
+    var message = service.getCurrentMessage();
+    same(message.requestType, expectedMessage.requestType);
 });
 
 module('stopwatch - located in service tests');
