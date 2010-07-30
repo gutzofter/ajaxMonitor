@@ -6,7 +6,7 @@
  * To change this template use File | Settings | File Templates.
  */
 
-function NewStopWatch() {
+function NewStopWatchService() {
     var stopWatch = {};
 
 
@@ -43,13 +43,14 @@ function NewNoMessageInCache(index) {
     };
 }
 
-function NewAjaxMonitorService(msgBus, stopWatch) {
+function NewAjaxMonitorService(msgBus, stopWatchService) {
     var service = {};
 
     var ajaxMonitorSettings = {};
     var currentMessage = {};
     var newMessageIndex = 0;
     var messageCache = {};
+    var timingServices =  stopWatchService;
 
     var originalAjax = $.ajax;
 
@@ -86,12 +87,14 @@ function NewAjaxMonitorService(msgBus, stopWatch) {
         }
 
         $.ajax = function(settings) {
+            var stopWatch = timingServices();
+            
             ajaxMonitorSettings = settings;
 
-            ajaxMonitorSettings.beforeSend = service.monitorBeforeSend(ajaxMonitorSettings.beforeSend, newMessageIndex);
+            ajaxMonitorSettings.beforeSend = service.monitorBeforeSend(ajaxMonitorSettings.beforeSend, newMessageIndex, stopWatch);
             ajaxMonitorSettings.error = service.monitorError(ajaxMonitorSettings.error, newMessageIndex);
             ajaxMonitorSettings.success = service.monitorSuccess(ajaxMonitorSettings.success, newMessageIndex);
-            ajaxMonitorSettings.complete = service.monitorComplete(ajaxMonitorSettings.complete, newMessageIndex);
+            ajaxMonitorSettings.complete = service.monitorComplete(ajaxMonitorSettings.complete, newMessageIndex, stopWatch);
 
 
             if(ajaxMonitorSettings.mock) {
@@ -182,7 +185,7 @@ function NewAjaxMonitorService(msgBus, stopWatch) {
         }
     };
 
-    service.monitorBeforeSend = function(beforeSend, messageIndex) {
+    service.monitorBeforeSend = function(beforeSend, messageIndex, stopWatch) {
         var origBeforeSend = function(request) {
             return (request === request);
         };
@@ -213,7 +216,7 @@ function NewAjaxMonitorService(msgBus, stopWatch) {
         };
     };
 
-    service.monitorComplete = function(complete, messageIndex) {
+    service.monitorComplete = function(complete, messageIndex, stopWatch) {
         var origComplete = function(request, status) {
             return (request && status);
         };

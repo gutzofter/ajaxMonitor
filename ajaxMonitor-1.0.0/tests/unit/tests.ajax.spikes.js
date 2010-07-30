@@ -35,7 +35,7 @@ should('what is going on in the error callback', function() {
 
 
 should('profile Ajax requests', function() {
-    var sw = NewStopWatch();
+    var sw = NewStopWatchService();
     var totalResult = true;
     var totalTime = 0;
 
@@ -56,7 +56,7 @@ should('profile Ajax requests with monitor', function() {
     $('<div id="ajax_monitor"/>').appendTo('body');
     var monitor = $('#ajax_monitor').ajaxMonitor({maximize: true, monitorActive: true});
 
-    var sw = NewStopWatch();
+    var sw = NewStopWatchService();
     var totalResult = true;
     var totalTime = 0;
 

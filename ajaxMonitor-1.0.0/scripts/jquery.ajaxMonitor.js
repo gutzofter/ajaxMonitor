@@ -11,8 +11,8 @@
     var msgBus = NewMessageBus();
     var view = NewAjaxMonitorView(msgBus);
     var model = NewAjaxMonitorModel(msgBus);
-    var stopWatch = NewStopWatch();
-    var service = NewAjaxMonitorService(msgBus, stopWatch);
+    var stopWatchService = NewStopWatchService;
+    var service = NewAjaxMonitorService(msgBus, stopWatchService);
 
     var controller = NewAjaxMonitorController(msgBus, view, model);
     var coordinator = NewAjaxMonitorCoordinator(msgBus, model, service);

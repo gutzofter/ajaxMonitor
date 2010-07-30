@@ -5,7 +5,7 @@
  * Time: 10:25:13 AM
  * To change this template use File | Settings | File Templates.
  */
-function NewMockStopWatch() {
+function NewMockStopWatchService() {
     var watch = {};
     var start = 101;
     var stop = 0;
@@ -29,12 +29,10 @@ function NewMockStopWatch() {
     return watch;
 }
 
-var mockStopWatch = NewMockStopWatch();
-
 var setup = {
     setup: function() {
         tstMsgBus = NewMessageBus();
-        service = NewAjaxMonitorService(tstMsgBus, mockStopWatch);
+        service = NewAjaxMonitorService(tstMsgBus, NewMockStopWatchService);
     }
     ,teardown: function() {
         removeEvent('isDeactivated');
@@ -60,7 +58,7 @@ should('fire is deactivated', function() {
 var setupWithAjaxActivated = {
     setup: function() {
         tstMsgBus = NewMessageBus();
-        service = NewAjaxMonitorService(tstMsgBus, mockStopWatch);
+        service = NewAjaxMonitorService(tstMsgBus, NewMockStopWatchService);
     }
     ,teardown: function() {
     }
@@ -108,7 +106,7 @@ should('execute ajax request', function() {
 var setupForCallbackFunctions = {
     setup: function() {
         tstMsgBus = NewMessageBus();
-        service = NewAjaxMonitorService(tstMsgBus, mockStopWatch);
+        service = NewAjaxMonitorService(tstMsgBus, NewMockStopWatchService);
     }
     ,teardown: function() {
         service.unwrapAjax();
@@ -122,7 +120,7 @@ should('execute complete wrapper without function', function() {
     var index = 0;
     service.addMessage(index, null);
 
-    var complete = service.monitorComplete(null, index);
+    var complete = service.monitorComplete(null, index, NewMockStopWatchService());
     complete();
 
     same(isFired, true, 'message completed');
@@ -137,7 +135,7 @@ should('execute complete wrapper with function', function() {
 
     var complete = service.monitorComplete(function() {
         completeIsExecuted = true;
-    }, index);
+    }, index, NewMockStopWatchService());
 
     complete();
 
@@ -157,7 +155,7 @@ should('get unexpected completion message', function() {
         ,"timeToComplete":  -1
     };
 
-    var complete = service.monitorComplete(NullFn, index);
+    var complete = service.monitorComplete(NullFn, index, NewMockStopWatchService());
 
     complete(null, 'success');
 
@@ -180,7 +178,7 @@ should('get beforeSend message', function() {
         ,"timeToComplete":  -1
     };
 
-    var beforeSend = service.monitorBeforeSend(NullFn, index);
+    var beforeSend = service.monitorBeforeSend(NullFn, index, NewMockStopWatchService());
 
     beforeSend(null);
 
@@ -238,7 +236,7 @@ var mock = {};
 var setupForAllMessages = {
     setup: function() {
         tstMsgBus = NewMessageBus();
-        service = NewAjaxMonitorService(tstMsgBus, mockStopWatch);
+        service = NewAjaxMonitorService(tstMsgBus, NewMockStopWatchService);
         var serverResponse = { status: 'success'};
         mock = NewAjaxMonitorMock(
         {
@@ -325,7 +323,7 @@ should('get wrappped count', function() {
 var setupForMockMessages = {
     setup: function() {
         tstMsgBus = NewMessageBus();
-        service = NewAjaxMonitorService(tstMsgBus, mockStopWatch);
+        service = NewAjaxMonitorService(tstMsgBus, NewMockStopWatchService);
         service.wrapAjax();
     }
     ,teardown: function() {
@@ -358,19 +356,30 @@ should('mock all monitored request', function() {
     enableNullEvent('messageSuccess');
     enableNullEvent('messageCompleted');
 
+    var message = {};
+
     var expectedMessage = {
         "requestType":         "POST [Monitored - Mock]"
+        ,"timeToComplete":      100
     };
 
     getAjaxServerRequest({ mock: true });
-    var message = service.getCurrentMessage();
+    message = service.getCurrentMessage();
     same(message.requestType, expectedMessage.requestType);
+    same(message.timeToComplete, expectedMessage.timeToComplete);
+    same(message.id, 0);
+
+    getAjaxServerRequest({ mock: true });
+    message = service.getCurrentMessage();
+    same(message.requestType, expectedMessage.requestType);
+    same(message.timeToComplete, expectedMessage.timeToComplete);
+    same(message.id, 1);
 });
 
 module('stopwatch - located in service tests');
 
 should('get me my time', function() {
-    var stopWatch = NewStopWatch();
+    var stopWatch = NewStopWatchService();
     stopWatch.start();
 
     var x = 0;
