@@ -14,6 +14,7 @@ var service = {};
 var isFired = false;
 
 var eventFired = {};
+var eventFiredCounter = {};
 
 var isServiceFiredOn = false;
 var isViewFiredOn = false;
@@ -55,10 +56,12 @@ function enableNullEvent(name) {
 
 function enableActionEvent(name) {
     eventFired[name] = false;
+    eventFiredCounter[name] = 0;
     isFired = false;
     tstMsgBus.when(name, function() {
         isFired = true;
         eventFired[name] = true;
+        eventFiredCounter[name]++;
     });
 }
 
@@ -79,6 +82,10 @@ function extend(a, b) {
 
 
 function getAjaxServerRequest(settings) {
+    var success = false;
+    var completedStatus = '';
+    var responseStatus = '';
+
     var defaultSettings = {
         type:           'POST'
         ,url:           '../../server_side.php'
@@ -101,10 +108,6 @@ function getAjaxServerRequest(settings) {
     };
 
     var changedSettings = extend(defaultSettings, settings);
-    var success = false;
-    var completedStatus = '';
-    var responseStatus = '';
-
     $.ajax(changedSettings);
 
     return ((completedStatus === 'success') && (responseStatus === 'success') && (success === true));

@@ -296,24 +296,40 @@ should('get second completion message', function() {
     same(message.id, expectedMessage.id, 'message id is ');
 });
 
-should('validate that timing is not getting mangled', function() {
-    enableNullEvent('messageBeforeSend');
-    enableNullEvent('messageSuccess');
-    enableNullEvent('messageCompleted');
+should('validate that timing is not getting mangled and only the correct events are fired and no others', function() {
+    enableActionEvent('messageBeforeSend');
+    enableActionEvent('messageSuccess');
+    enableActionEvent('messageCompleted');
+    enableActionEvent('messageError');
+
     var message = {};
 
     var expectedMessage = {
         "timeToComplete": 100
     };
 
-    getAjaxServerRequest({});
+    var defaultSettings = {
+        type:           'POST'
+        ,url:           '../../server_side.php'
+        ,async:         false
+        ,dataType:      'json'
+        ,beforeSend:    function() {}
+        ,complete:      function() {}
+        ,success:       function() {}
+    };
+
+    $.ajax(defaultSettings);
     message = service.getCurrentMessage();
     same(message.timeToComplete, expectedMessage.timeToComplete, 'message id is ');
 
-    getAjaxServerRequest({});
+    $.ajax(defaultSettings);
     message = service.getCurrentMessage();
 
     same(message.timeToComplete, expectedMessage.timeToComplete, 'message id is ');
+    same(eventFiredCounter.messageBeforeSend, 2, 'before send');
+    same(eventFiredCounter.messageSuccess, 2, 'success');
+    same(eventFiredCounter.messageCompleted, 2, 'completed');
+    same(eventFiredCounter.messageError, 0, 'error');
 });
 
 should('get wrappped count', function() {
@@ -336,9 +352,9 @@ var setupForMockMessages = {
 module('Service - mock capabilities', setupForMockMessages);
 
 should('have standard monitored request with mocking on request being false', function() {
-    enableNullEvent('messageBeforeSend');
-    enableNullEvent('messageSuccess');
-    enableNullEvent('messageCompleted');
+    enableActionEvent('messageBeforeSend');
+    enableActionEvent('messageSuccess');
+    enableActionEvent('messageCompleted');
 
     var expectedMessage = {
         "requestType":         "POST [Monitored]"
@@ -349,12 +365,17 @@ should('have standard monitored request with mocking on request being false', fu
     var message = service.getCurrentMessage();
     same(message.requestType, expectedMessage.requestType);
     same(message.timeToComplete, expectedMessage.timeToComplete);
+
+    same(eventFiredCounter.messageBeforeSend, 1, 'before send');
+    same(eventFiredCounter.messageSuccess, 1, 'success');
+    same(eventFiredCounter.messageCompleted, 1, 'completed');
 });
 
 should('mock all monitored request', function() {
     enableNullEvent('messageBeforeSend');
     enableNullEvent('messageSuccess');
     enableNullEvent('messageCompleted');
+    enableNullEvent('messageError');
 
     var message = {};
 
@@ -365,10 +386,6 @@ should('mock all monitored request', function() {
 
     getAjaxServerRequest({ mock: true });
     message = service.getCurrentMessage();
-    same(message.requestType, expectedMessage.requestType);
-    same(message.timeToComplete, expectedMessage.timeToComplete);
-    same(message.id, 0);
-
     getAjaxServerRequest({ mock: true });
     message = service.getCurrentMessage();
     same(message.requestType, expectedMessage.requestType);

@@ -24,7 +24,7 @@
             var $ajaxMonitor = $('#ajax_monitor').ajaxMonitor({maximize: true, monitorActive: true});
 
             var ajaxSettings = {
-                    type:       'GET'
+                    type:       'PUT'
                     ,mock:      false
                     ,url:        'server_side.php'
                     ,async:      false
@@ -45,7 +45,7 @@
                 };
 
             var ajaxMockSettings = {
-                    type:       'GET'
+                    type:       'PUT'
                     ,mock:      true
                     ,url:        'server_side.php'
                     ,async:      false

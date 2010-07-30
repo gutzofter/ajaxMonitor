@@ -46,7 +46,6 @@ function NewNoMessageInCache(index) {
 function NewAjaxMonitorService(msgBus, stopWatchService) {
     var service = {};
 
-    var ajaxMonitorSettings = {};
     var currentMessage = {};
     var newMessageIndex = 0;
     var messageCache = {};
@@ -89,7 +88,8 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
         $.ajax = function(settings) {
             var stopWatch = timingServices();
             
-            ajaxMonitorSettings = settings;
+            var ajaxMonitorSettings = $.extend({}, settings);
+
 
             ajaxMonitorSettings.beforeSend = service.monitorBeforeSend(ajaxMonitorSettings.beforeSend, newMessageIndex, stopWatch);
             ajaxMonitorSettings.error = service.monitorError(ajaxMonitorSettings.error, newMessageIndex);
