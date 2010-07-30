@@ -211,7 +211,7 @@ function NewAjaxMonitorModel(msgBus) {
     return model;
 }
 
-function NewStopWatch() {
+function NewStopWatchService() {
     var stopWatch = {};
 
 
@@ -248,13 +248,13 @@ function NewNoMessageInCache(index) {
     };
 }
 
-function NewAjaxMonitorService(msgBus, stopWatch) {
+function NewAjaxMonitorService(msgBus, stopWatchService) {
     var service = {};
 
-    var ajaxMonitorSettings = {};
     var currentMessage = {};
     var newMessageIndex = 0;
     var messageCache = {};
+    var timingServices =  stopWatchService;
 
     var originalAjax = $.ajax;
 
@@ -291,25 +291,42 @@ function NewAjaxMonitorService(msgBus, stopWatch) {
         }
 
         $.ajax = function(settings) {
-            ajaxMonitorSettings = settings;
+            var stopWatch = timingServices();
 
-            service.addMessage(newMessageIndex, {
-                id:                 newMessageIndex
-                ,requestType:       ajaxMonitorSettings.type + ' [Monitored]'
-                ,completedStatus:   'unknown'
-                ,timeToComplete:    -1
-                ,url:               ajaxMonitorSettings.url
-            });
+            var ajaxMonitorSettings = $.extend({}, settings);
 
-            ajaxMonitorSettings.monitorBeforeSend = service.monitorBeforeSend(ajaxMonitorSettings.beforeSend, newMessageIndex);
-            ajaxMonitorSettings.monitorError = service.monitorError(ajaxMonitorSettings.error, newMessageIndex);
-            ajaxMonitorSettings.monitorSuccess = service.monitorSuccess(ajaxMonitorSettings.success, newMessageIndex);
-            ajaxMonitorSettings.complete = service.monitorComplete(ajaxMonitorSettings.complete, newMessageIndex);
+
+            ajaxMonitorSettings.beforeSend = service.monitorBeforeSend(ajaxMonitorSettings.beforeSend, newMessageIndex, stopWatch);
+            ajaxMonitorSettings.error = service.monitorError(ajaxMonitorSettings.error, newMessageIndex);
+            ajaxMonitorSettings.success = service.monitorSuccess(ajaxMonitorSettings.success, newMessageIndex);
+            ajaxMonitorSettings.complete = service.monitorComplete(ajaxMonitorSettings.complete, newMessageIndex, stopWatch);
+
+
+            if(ajaxMonitorSettings.mock) {
+                var mockAjax = NewAjaxMock('success', 'ajaxMonitor Mocker');
+                service.addMessage(newMessageIndex, {
+                    id:                 newMessageIndex
+                    ,requestType:       ajaxMonitorSettings.type + ' [Monitored - Mock]'
+                    ,completedStatus:   'unknown'
+                    ,timeToComplete:    -1
+                    ,url:               ajaxMonitorSettings.url
+                });
+
+                mockAjax(ajaxMonitorSettings);
+            }
+            else {
+                service.addMessage(newMessageIndex, {
+                    id:                 newMessageIndex
+                    ,requestType:       ajaxMonitorSettings.type + ' [Monitored]'
+                    ,completedStatus:   'unknown'
+                    ,timeToComplete:    -1
+                    ,url:               ajaxMonitorSettings.url
+                });
+
+                originalAjax(ajaxMonitorSettings);
+            }
 
             newMessageIndex++;
-
-            stopWatch.start();
-            originalAjax(ajaxMonitorSettings);
         };
     };
 
@@ -343,8 +360,6 @@ function NewAjaxMonitorService(msgBus, stopWatch) {
         }
     };
 
-
-
     service.monitorError = function(error, messageIndex) {
         var origError = function(request, status, errorThrown) {
             return (request && status && errorThrown);
@@ -375,7 +390,7 @@ function NewAjaxMonitorService(msgBus, stopWatch) {
         }
     };
 
-    service.monitorBeforeSend = function(beforeSend, messageIndex) {
+    service.monitorBeforeSend = function(beforeSend, messageIndex, stopWatch) {
         var origBeforeSend = function(request) {
             return (request === request);
         };
@@ -385,6 +400,7 @@ function NewAjaxMonitorService(msgBus, stopWatch) {
         }
 
         return function(request) {
+            stopWatch.start();
             origBeforeSend(request);
 
             currentMessage = service.getMessage(messageIndex);
@@ -401,11 +417,11 @@ function NewAjaxMonitorService(msgBus, stopWatch) {
             }
 
             service.addMessage(messageIndex, currentMessage);
-            msgBus.fire.messageBeforeSent();
+            msgBus.fire.messageBeforeSend();
         };
     };
 
-    service.monitorComplete = function(complete, messageIndex) {
+    service.monitorComplete = function(complete, messageIndex, stopWatch) {
         var origComplete = function(request, status) {
             return (request && status);
         };
@@ -517,7 +533,7 @@ function NewAjaxMonitorCoordinator(msgBus, model, service) {
         model.addMessage(message);
     });
 
-    msgBus.when('messageBeforeSent', function() {
+    msgBus.when('messageBeforeSend', function() {
         var message = service.getCurrentMessage();
         model.addMessage(message);
     });
@@ -538,6 +554,7 @@ function NewAjaxMonitorCoordinator(msgBus, model, service) {
 
     return coordinator;
 }
+
 function NewAjaxMock(responseType, runTimes, responseData) {
     var mock = {};
     var originalAjax = $.ajax;
@@ -604,15 +621,13 @@ function NewAjaxMonitorMock(settings, responseData) {
     return monitorMock;
 }
 
-
-
 (function($) {
     var internalData = {};
     var msgBus = NewMessageBus();
     var view = NewAjaxMonitorView(msgBus);
     var model = NewAjaxMonitorModel(msgBus);
-    var stopWatch = NewStopWatch();
-    var service = NewAjaxMonitorService(msgBus, stopWatch);
+    var stopWatchService = NewStopWatchService;
+    var service = NewAjaxMonitorService(msgBus, stopWatchService);
 
     var controller = NewAjaxMonitorController(msgBus, view, model);
     var coordinator = NewAjaxMonitorCoordinator(msgBus, model, service);
