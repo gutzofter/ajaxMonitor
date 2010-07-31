@@ -661,7 +661,9 @@ function NewAjaxMonitorMock(settings, responseData) {
         var defaultSettings = {
             monitorActive: false
             ,maximize: false
+            // TODO: Not Implemented at this time
             ,refreshRate: 'realtime' // 'realtime', 'fast', 'medium', 'slow', value in mSecs
+            // TODO: Not Implemented at this time
             ,useExternalServices: false // future jsonlint testing of request data and repsonse data and test json reuqest to my server
         };
         consoleLog(internalData.plugInName + ' Version: ' + internalData.version + ' is initialized');

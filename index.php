@@ -23,7 +23,10 @@
     <script type="text/javascript" src="ajaxMonitor-1.0.0/src/jquery.ajaxMonitor-1.0.0.js"></script>
     <script type="text/javascript">
         $(function() {
-            var $ajaxMonitor = $('#ajax_monitor').ajaxMonitor({maximize: true, monitorActive: true});
+            var $ajaxMonitor = $('#ajax_monitor').ajaxMonitor({
+                maximize: true,
+                monitorActive: true
+            });
 
             var ajaxSettings = {
                     type:       'PUT'
