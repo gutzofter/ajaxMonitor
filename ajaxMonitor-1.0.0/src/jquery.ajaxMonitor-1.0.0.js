@@ -309,7 +309,10 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
 
 
             if(ajaxMonitorSettings.mock) {
-                var mockAjax = NewAjaxMock('success', 'ajaxMonitor Mocker');
+                var mockAjax = NewAjaxMock('success', {
+                    status:     'success'
+                    ,message:   'Thank you for using ajaxMonitor with Mocking!'
+                });
                 service.addMessage(newMessageIndex, {
                     id:                 newMessageIndex
                     ,requestType:       ajaxMonitorSettings.type + ' [Monitored - Mock]'
