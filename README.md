@@ -29,6 +29,8 @@ Over-riding default:
             monitorActive: true
         });
 
+###Link to Work in progrss###
+<a href="http://gutzofter.herobo.com/ajaxMonitor/" />
 
 ###Screen Shot###
 <img src="http://gutzofter.herobo.com/ajaxMonitor/ajaxMonitor-1.0.0/images/screenshot.JPG"/>
