@@ -28,3 +28,8 @@ Over-riding default:
             maximize: true,
             monitorActive: true
         });
+
+
+###Screen Shot###
+<img src="http://gutzofter.herobo.com/ajaxMonitor/ajaxMonitor-1.0.0/images/screenshot.JPG"/>
+
