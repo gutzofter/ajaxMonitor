@@ -9,16 +9,18 @@
     <link rel="stylesheet" type="text/css" href="styles/ajaxMonitor.css" media="all"/>
 
     <script type="text/javascript" src="scripts/jquery-1.4.2.js"></script>
-    <script type="text/javascript" src="scripts/ajaxMonitor.msg.bus.js"></script>
-    <script type="text/javascript" src="scripts/ajaxMonitor.view.js"></script>
-    <script type="text/javascript" src="scripts/ajaxMonitor.model.js"></script>
-    <script type="text/javascript" src="scripts/ajaxMonitor.controller.js"></script>
-    <script type="text/javascript" src="scripts/ajaxMonitor.coordinator.js"></script>
-    <script type="text/javascript" src="scripts/ajaxMonitor.service.js"></script>
-    <script type="text/javascript" src="scripts/ajaxMonitor.mock.js"></script>
 
-    <script type="text/javascript" src="scripts/jquery.ajaxMonitor.js"></script>
+<!--    <script type="text/javascript" src="scripts/ajaxMonitor.msg.bus.js"></script>-->
+<!--    <script type="text/javascript" src="scripts/ajaxMonitor.view.js"></script>-->
+<!--    <script type="text/javascript" src="scripts/ajaxMonitor.model.js"></script>-->
+<!--    <script type="text/javascript" src="scripts/ajaxMonitor.controller.js"></script>-->
+<!--    <script type="text/javascript" src="scripts/ajaxMonitor.coordinator.js"></script>-->
+<!--    <script type="text/javascript" src="scripts/ajaxMonitor.service.js"></script>-->
+<!--    <script type="text/javascript" src="scripts/ajaxMonitor.mock.js"></script>-->
+<!---->
+<!--    <script type="text/javascript" src="scripts/jquery.ajaxMonitor.js"></script>-->
 
+    <script type="text/javascript" src="src/jquery.ajaxMonitor-1.0.0.js"></script>
     <script type="text/javascript">
         $(function() {
             var $ajaxMonitor = $('#ajax_monitor').ajaxMonitor({maximize: true, monitorActive: true});

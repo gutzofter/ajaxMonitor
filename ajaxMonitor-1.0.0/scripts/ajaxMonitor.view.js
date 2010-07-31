@@ -77,7 +77,13 @@ function NewAjaxMonitorView(msgBus) {
     };
 
     view.newMessage = function(message) {
-        var tableEntry = view.formatMessageHTML(message);
+        var id = message.id;
+        var selector = '#monitor_table tbody tr[id=message_' + id + ']';
+
+        $(selector).remove();
+
+        var tableEntry = view.formatMessageHTML(id, message);
+
         $('#monitor_table tbody').append(tableEntry);
     };
 
@@ -101,8 +107,8 @@ function NewAjaxMonitorView(msgBus) {
         return '<th width="' + width + '%">' + item + '</th>';
     };
 
-    view.formatMessageHTML = function(message) {
-        var tableEntry = '<tr>';
+    view.formatMessageHTML = function(id, message) {
+        var tableEntry = '<tr id="message_' + id + '" >';
 
         tableEntry += view.formatMessageItemHTML(message.id);
         tableEntry += view.formatMessageItemHTML(message.statusHTTP);
