@@ -30,7 +30,7 @@ Over-riding default:
         });
 
 ###Link to Work in progrss###
-<a href="http://gutzofter.herobo.com/ajaxMonitor/" />
+<a href="http://gutzofter.herobo.com/ajaxMonitor/">AjaxMonitor</a>
 
 ###Screen Shot###
 <img src="http://gutzofter.herobo.com/ajaxMonitor/ajaxMonitor-1.0.0/images/screenshot.JPG"/>
