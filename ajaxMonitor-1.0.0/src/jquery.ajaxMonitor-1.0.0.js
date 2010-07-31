@@ -43,7 +43,7 @@ function NewAjaxMonitorView(msgBus) {
 
         $('#monitor_container')
                 .append('<div id="monitor_controls" class="section reset_left left_position"></div>')
-                .append('<div id="monitor_messages" class="section reset_left left_position">Monitor Messages</div>')
+                .append('<div id="monitor_messages" class="section reset_left left_position"><div>Monitor Messages</div></div>')
                 .append('<div id="monitor_footer" class="section reset_left left_position">Monitor Footer</div>')
                 .append('<div id="monitor_status" class="section reset_left left_position">Monitor Status</div>');
 
@@ -52,11 +52,13 @@ function NewAjaxMonitorView(msgBus) {
                 .append('<div id="activate_control" class="control right_position">Activate Not Initialized</div>');
 
         $('#monitor_messages')
-                .append('<table id="monitor_table" />');
+                .append('<table id="monitor_table" class="display"/>');
 
+        $('#monitor_table').hide();
         $('<thead>' + view.formatColumnHTML() + '</thead>').appendTo('#monitor_table');
-        $('<tbody>' + '<tr>' + '</tr>' + '</tbody>').appendTo('#monitor_table');
         $('<tfoot>' + view.formatColumnHTML() + '</tfoot>').appendTo('#monitor_table');
+        $('<tbody>' + '</tbody>').appendTo('#monitor_table');
+
 
         $('#monitor_container').hide();
 
@@ -109,6 +111,7 @@ function NewAjaxMonitorView(msgBus) {
         var tableEntry = view.formatMessageHTML(id, message);
 
         $('#monitor_table tbody').append(tableEntry);
+        $('#monitor_table').show();
     };
 
     view.formatColumnHTML = function() {
@@ -128,7 +131,8 @@ function NewAjaxMonitorView(msgBus) {
     };
 
     view.formatColumnItemHTML = function(item, width) {
-        return '<th width="' + width + '%">' + item + '</th>';
+//        return '<th width="' + width + '%">' + item + '</th>';
+        return '<th >' + item + '</th>';
     };
 
     view.formatMessageHTML = function(id, message) {
