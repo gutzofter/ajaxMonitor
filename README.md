@@ -29,6 +29,9 @@ Over-riding default:
             monitorActive: true
         });
 
+###Unit tests so far...###
+<a href="http://gutzofter.herobo.com/ajaxMonitor/ajaxMonitor-1.0.0/tests/unit/tests.ajax.monitor.php">Ajax Monitor Plug-In Test Suite</a>
+
 ###Link to Work in progrss###
 <a href="http://gutzofter.herobo.com/ajaxMonitor/">AjaxMonitor</a>
 
