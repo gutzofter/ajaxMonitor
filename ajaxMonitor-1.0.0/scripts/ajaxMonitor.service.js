@@ -77,6 +77,8 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
     };
 
     service.wrapAjax = function() {
+        var xhr = {};
+
         originalAjax = $.ajax;
         if(originalAjax.isMonitoredCount) {
             originalAjax.isMonitoredCount++;
@@ -124,10 +126,12 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
                     ,url:               ajaxMonitorSettings.url
                 });
 
-                originalAjax(ajaxMonitorSettings);
+                xhr = originalAjax(ajaxMonitorSettings);
             }
 
             newMessageIndex++;
+            
+            return xhr;
         };
     };
 

@@ -293,6 +293,8 @@
         };
 
         service.wrapAjax = function() {
+            var xhr = {};
+
             originalAjax = $.ajax;
             if(originalAjax.isMonitoredCount) {
                 originalAjax.isMonitoredCount++;
@@ -340,10 +342,12 @@
                         ,url:               ajaxMonitorSettings.url
                     });
 
-                    originalAjax(ajaxMonitorSettings);
+                    xhr = originalAjax(ajaxMonitorSettings);
                 }
 
                 newMessageIndex++;
+
+                return xhr;
             };
         };
 
@@ -605,6 +609,8 @@
             if (settings.complete) {
                 settings.complete(xhr, textStatus);
             }
+
+            return xhr;
         }
     }
 
@@ -612,17 +618,20 @@
         var mock = {};
         var originalAjax = $.ajax;
         var executionCount = 0;
+        var xhr = {};
 
 
         $.ajax = function(settings) {
             if (mock.executionCount() < runTimes) {
                 var mockedAjax = NewAjaxMock(responseType, responseData);
-                mockedAjax(settings);
+                xhr = mockedAjax(settings);
                 executionCount++;
+                return xhr;
             }
             else {
                 $.ajax = originalAjax;
-                $.ajax(settings);
+                xhr =  $.ajax(settings);
+                return xhr;
             }
         };
 

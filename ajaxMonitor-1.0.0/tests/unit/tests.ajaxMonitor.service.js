@@ -352,9 +352,33 @@ should('specify default request type of GET if no request type is specified', fu
         ,success:       function() {}
     };
 
-    $.ajax(defaultSettings);
+    var xhr = $.ajax(defaultSettings);
     message = service.getCurrentMessage();
     same(message.requestType, expectedMessage.requestType, 'message request type is ');
+});
+
+should('verify that .ajax returns xhr reuqest object', function() {
+    enableNullEvent('messageBeforeSend');
+    enableNullEvent('messageSuccess');
+    enableNullEvent('messageCompleted');
+
+    var message = {};
+
+    var expectedMessage = {
+        "requestType": 'GET [Monitored]'
+    };
+
+    var defaultSettings = {
+        url:           '../../server_side.php'
+        ,async:         false
+        ,dataType:      'json'
+        ,beforeSend:    function() {}
+        ,complete:      function() {}
+        ,success:       function() {}
+    };
+
+    var xhr = $.ajax(defaultSettings);
+    same(xhr.status, 200, 'xhr status is 200');
 
 });
 
