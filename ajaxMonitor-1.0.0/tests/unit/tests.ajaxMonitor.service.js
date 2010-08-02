@@ -255,7 +255,7 @@ var setupForAllMessages = {
 
 module('service - complete request messages', setupForAllMessages);
 
-should('get completion message', function() {
+should('get completion message for post request', function() {
     enableActionEvent('messageBeforeSend');
     enableActionEvent('messageSuccess');
     enableActionEvent('messageCompleted');
@@ -330,6 +330,32 @@ should('validate that timing is not getting mangled and only the correct events 
     same(eventFiredCounter.messageSuccess, 2, 'success');
     same(eventFiredCounter.messageCompleted, 2, 'completed');
     same(eventFiredCounter.messageError, 0, 'error');
+});
+
+should('specify default request type of GET if no request type is specified', function() {
+    enableNullEvent('messageBeforeSend');
+    enableNullEvent('messageSuccess');
+    enableNullEvent('messageCompleted');
+
+    var message = {};
+
+    var expectedMessage = {
+        "requestType": 'GET [Monitored]'
+    };
+
+    var defaultSettings = {
+        url:           '../../server_side.php'
+        ,async:         false
+        ,dataType:      'json'
+        ,beforeSend:    function() {}
+        ,complete:      function() {}
+        ,success:       function() {}
+    };
+
+    $.ajax(defaultSettings);
+    message = service.getCurrentMessage();
+    same(message.requestType, expectedMessage.requestType, 'message request type is ');
+
 });
 
 should('get wrappped count', function() {

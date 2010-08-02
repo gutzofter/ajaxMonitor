@@ -312,6 +312,9 @@
                 ajaxMonitorSettings.success = service.monitorSuccess(ajaxMonitorSettings.success, newMessageIndex);
                 ajaxMonitorSettings.complete = service.monitorComplete(ajaxMonitorSettings.complete, newMessageIndex, stopWatch);
 
+                if(ajaxMonitorSettings.type === undefined) {
+                    ajaxMonitorSettings.type = $.ajaxSettings.type;
+                }
 
                 if(ajaxMonitorSettings.mock) {
                     var mockAjax = NewAjaxMock('success', {
