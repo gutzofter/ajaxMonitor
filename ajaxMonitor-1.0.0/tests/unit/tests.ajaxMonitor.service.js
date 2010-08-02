@@ -421,6 +421,17 @@ should('have standard monitored request with mocking on request being false', fu
     same(eventFiredCounter.messageCompleted, 1, 'completed');
 });
 
+should('verify mocked ajax request returns xhr object', function() {
+    enableActionEvent('messageBeforeSend');
+    enableActionEvent('messageSuccess');
+    enableActionEvent('messageCompleted');
+
+    var xhr = $.ajax({ mock: true });
+
+    same(xhr.status, 200, 'request status is ')
+
+});
+
 should('mock all monitored request', function() {
     enableNullEvent('messageBeforeSend');
     enableNullEvent('messageSuccess');

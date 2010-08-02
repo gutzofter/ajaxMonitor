@@ -114,8 +114,8 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
                     ,timeToComplete:    -1
                     ,url:               ajaxMonitorSettings.url
                 });
-
-                mockAjax(ajaxMonitorSettings);
+                
+                xhr = mockAjax(ajaxMonitorSettings);
             }
             else {
                 service.addMessage(newMessageIndex, {
