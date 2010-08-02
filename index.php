@@ -11,7 +11,7 @@
     <script type="text/javascript" src="ajaxMonitor-1.0.0/scripts/jquery-1.4.2.js"></script>
     <script type="text/javascript" src="ajaxMonitor-1.0.0/scripts/jquery.dataTables.js"></script>
 
-    <script type="text/javascript" src="http://gutzofter.herobo.com/ajaxMonitor/ajaxMonitor-1.0.0/src/jquery.ajaxMonitor-1.0.0.js"></script>
+    <script type="text/javascript" src="ajaxMonitor-1.0.0/src/jquery.ajaxMonitor-1.0.0.js"></script>
     <script type="text/javascript">
         $(function() {
             var ajaxMonitor = $('#ajax_monitor').ajaxMonitor({
