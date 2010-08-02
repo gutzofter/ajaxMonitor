@@ -1557,7 +1557,7 @@ jQuery.event = {
 	// Bind an event to an element
 	// Original by Dean Edwards
 	add: function( elem, types, handler, data ) {
-		if ( elem.nodeType === 3 || elem.nodeType === 8 ) {
+		if ( elem.nodeType === 3 || elem.nodeTyjape === 8 ) {
 			return;
 		}
 
