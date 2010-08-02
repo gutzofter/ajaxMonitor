@@ -455,7 +455,16 @@
                     currentMessage.requestStatus = 'completed';
                     currentMessage.completedStatus = status;
                     currentMessage.timeToComplete = stopWatch.elapsed();
-                    currentMessage.statusHTTP = request.status
+
+                    //TODO: does not handle xpc wrappednative objects
+                    // need to figure this part out.
+                    // ????no unit tests coverage how do create an exception when accessing a property????
+                    try {
+                        currentMessage.statusHTTP = request.status
+                    }
+                    catch(e) {
+                        currentMessage.statusHTTP = 'server error'
+                    }
                 }
                 else {
                     // unexpected completion of message this should throw an error, but it worked good in the unit test
