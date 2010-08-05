@@ -45,13 +45,13 @@ function NewAjaxMocker(responseType, runTimes, responseData) {
     $.ajax = function(settings) {
         if (mock.executionCount() < runTimes) {
             var mockedAjax = NewAjaxMock(responseType, responseData);
-            xhr = mockedAjax(settings);
+            xhr = mockedAjax.call(this, settings);
             executionCount++;
             return xhr;
         }
         else {
             $.ajax = originalAjax;
-            xhr =  $.ajax(settings);
+            xhr =  $.ajax.call(this, settings);
             return xhr;
         }
     };

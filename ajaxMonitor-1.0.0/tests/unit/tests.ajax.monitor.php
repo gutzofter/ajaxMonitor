@@ -6,30 +6,6 @@
         <link rel="stylesheet" href="../../../../qunit/qunit.css" type="text/css" media="screen">
         <link rel="stylesheet" type="text/css" href="../../styles/ajaxMonitor.css" media="all"/>
 
-        <script type="text/javascript" src="../../scripts/jquery-1.4.2.js"></script>
-        <script type="text/javascript" src="../../../../qunit/qunit.js"></script>
-
-        <script type="text/javascript" src="../../scripts/ajaxMonitor.msg.bus.js"></script>
-        <script type="text/javascript" src="../../scripts/ajaxMonitor.view.js"></script>
-        <script type="text/javascript" src="../../scripts/ajaxMonitor.model.js"></script>
-        <script type="text/javascript" src="../../scripts/ajaxMonitor.controller.js"></script>
-        <script type="text/javascript" src="../../scripts/ajaxMonitor.coordinator.js"></script>
-        <script type="text/javascript" src="../../scripts/ajaxMonitor.service.js"></script>
-        <script type="text/javascript" src="../../scripts/ajaxMonitor.mock.js"></script>
-
-        <script type="text/javascript" src="../../scripts/jquery.ajaxMonitor.js"></script>
-
-<!--        <script type="text/javascript" src="../../src/jquery.ajaxMonitor-1.0.0.js"></script>-->
-        <script type="text/javascript" src="tests.helper.js"></script>
-
-        <script type="text/javascript" src="tests.ajaxMonitor.controller.js"></script>
-        <script type="text/javascript" src="tests.ajaxMonitor.view.js"></script>
-        <script type="text/javascript" src="tests.ajaxMonitor.model.js"></script>
-        <script type="text/javascript" src="tests.ajaxMonitor.coordinator.js"></script>
-        <script type="text/javascript" src="tests.ajaxMonitor.service.js"></script>
-        <script type="text/javascript" src="tests.ajaxMonitor.mock.js"></script>
-
-<!--        <script type="text/javascript" src="tests.jquery.ajaxMonitor.js"></script>-->
     </head>
     <body>
         <h1 id="qunit-header">Ajax Monitor Plug-In Test Suite</h1>
@@ -43,7 +19,36 @@
     </body>
 
 </html>
+<script type="text/javascript" src="../../scripts/jquery-1.4.2.js"></script>
+<script type="text/javascript" src="../../../../qunit/qunit.js"></script>
+
+<script type="text/javascript" src="../../scripts/ajaxMonitor.msg.bus.js"></script>
+<script type="text/javascript" src="../../scripts/ajaxMonitor.view.js"></script>
+<script type="text/javascript" src="../../scripts/ajaxMonitor.model.js"></script>
+<script type="text/javascript" src="../../scripts/ajaxMonitor.controller.js"></script>
+<script type="text/javascript" src="../../scripts/ajaxMonitor.coordinator.js"></script>
+<script type="text/javascript" src="../../scripts/ajaxMonitor.service.js"></script>
+<script type="text/javascript" src="../../scripts/ajaxMonitor.mock.js"></script>
+
+<script type="text/javascript" src="../../scripts/jquery.ajaxMonitor.js"></script>
+
+<!--        <script type="text/javascript" src="../../src/jquery.ajaxMonitor-1.0.0.js"></script>-->
+<script type="text/javascript" src="tests.helper.js"></script>
+
+<script type="text/javascript" src="tests.ajaxMonitor.controller.js"></script>
+<script type="text/javascript" src="tests.ajaxMonitor.view.js"></script>
+<script type="text/javascript" src="tests.ajaxMonitor.model.js"></script>
+<script type="text/javascript" src="tests.ajaxMonitor.coordinator.js"></script>
+<script type="text/javascript" src="tests.ajaxMonitor.service.js"></script>
+<script type="text/javascript" src="tests.ajaxMonitor.mock.js"></script>
+
+<!--        <script type="text/javascript" src="tests.jquery.ajaxMonitor.js"></script>-->
+
 <!--<script type="text/javascript">-->
-<!--    var monitor = $('#unit_ajax_monitor').ajaxMonitor();-->
+<!--    $(function() {-->
+<!--        var monitor = $('#ajax_monitor').ajaxMonitor({-->
+<!--            monitorActive: true-->
+<!--            ,maximize: true});-->
+<!--    });-->
 <!--</script>-->
 <!---->

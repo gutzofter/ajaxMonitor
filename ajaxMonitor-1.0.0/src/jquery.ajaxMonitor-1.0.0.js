@@ -267,7 +267,7 @@
         var messageCache = {};
         var timingServices =  stopWatchService;
 
-        var originalAjax = $.ajax;
+        var originalAjax = {};
 
         service.getMessage = function(index) {
             var message = messageCache[index];
@@ -293,8 +293,6 @@
         };
 
         service.wrapAjax = function() {
-            var xhr = {};
-
             originalAjax = $.ajax;
             if(originalAjax.isMonitoredCount) {
                 originalAjax.isMonitoredCount++;
@@ -304,19 +302,21 @@
             }
 
             $.ajax = function(settings) {
+                var xhr = {};
+
                 var stopWatch = timingServices();
 
-                var ajaxMonitorSettings = $.extend({}, settings);
-
+                //TODO: need to unit test for the extension of global ajaxSettings
+                var ajaxMonitorSettings = $.extend({}, $.ajaxSettings, settings);
 
                 ajaxMonitorSettings.beforeSend = service.monitorBeforeSend(ajaxMonitorSettings.beforeSend, newMessageIndex, stopWatch);
                 ajaxMonitorSettings.error = service.monitorError(ajaxMonitorSettings.error, newMessageIndex);
                 ajaxMonitorSettings.success = service.monitorSuccess(ajaxMonitorSettings.success, newMessageIndex);
                 ajaxMonitorSettings.complete = service.monitorComplete(ajaxMonitorSettings.complete, newMessageIndex, stopWatch);
 
-                if(ajaxMonitorSettings.type === undefined) {
-                    ajaxMonitorSettings.type = $.ajaxSettings.type;
-                }
+//            if(ajaxMonitorSettings.type === undefined) {
+//                ajaxMonitorSettings.type = $.ajaxSettings.type;
+//            }
 
                 if(ajaxMonitorSettings.mock) {
                     var mockAjax = NewAjaxMock('success', {
@@ -331,7 +331,7 @@
                         ,url:               ajaxMonitorSettings.url
                     });
 
-                    xhr = mockAjax(ajaxMonitorSettings);
+                    xhr = mockAjax.call(this, ajaxMonitorSettings);
                 }
                 else {
                     service.addMessage(newMessageIndex, {
@@ -342,7 +342,7 @@
                         ,url:               ajaxMonitorSettings.url
                     });
 
-                    xhr = originalAjax(ajaxMonitorSettings);
+                    xhr = originalAjax.call(this, ajaxMonitorSettings);
                 }
 
                 newMessageIndex++;
@@ -422,11 +422,16 @@
 
             return function(request) {
                 stopWatch.start();
-                origBeforeSend(request);
+
+                //TODO: need to add unit tests for abortEarly
+                var abortEarly = origBeforeSend(request);
 
                 currentMessage = service.getMessage(messageIndex);
 
                 if(currentMessage) {
+                    if(abortEarly) {
+                        currentMessage.completedStatus = 'aborted';
+                    }
                     currentMessage.requestStatus = 'beforeSend';
                 }
                 else {
@@ -439,6 +444,8 @@
 
                 service.addMessage(messageIndex, currentMessage);
                 msgBus.fire.messageBeforeSend();
+
+                return abortEarly;
             };
         };
 
@@ -474,7 +481,7 @@
                     }
                 }
                 else {
-                    // unexpected completion of message this should throw an error, but it worked good in the unit test
+                    // unexpected completion of message this should be written to thrown an error, but it worked good in the unit test
                     currentMessage = {};
                     currentMessage.id = -1,
                     currentMessage.requestStatus = 'completed';
@@ -624,13 +631,13 @@
         $.ajax = function(settings) {
             if (mock.executionCount() < runTimes) {
                 var mockedAjax = NewAjaxMock(responseType, responseData);
-                xhr = mockedAjax(settings);
+                xhr = mockedAjax.call(this, settings);
                 executionCount++;
                 return xhr;
             }
             else {
                 $.ajax = originalAjax;
-                xhr =  $.ajax(settings);
+                xhr =  $.ajax.call(this, settings);
                 return xhr;
             }
         };

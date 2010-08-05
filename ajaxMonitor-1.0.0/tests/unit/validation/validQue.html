@@ -1,0 +1,38 @@
+<!-- test1.htm -->
+<html>
+<head>
+    <script type="text/javascript" src="../../../scripts/jquery-1.4.2.js"></script>
+</head>
+<body>
+    <div id="debug"></div>
+    <script type="text/javascript">
+
+        function ajaxQue() {
+            this.prop1 = 1;
+            var me = this;
+
+            this.get = function(url, data) {
+                if (window.console && window.console.log) {
+                    window.console.log("this in getJSON= %p", this);
+                }
+                $("#debug").append("prop1=" + this.prop1 + "<br>");    //this works
+                $.get(url, data, this.jobCompleted);
+            };
+
+            this.jobCompleted = function(response) {
+                if (window.console && window.console.log) {
+                    window.console.log("this in jobCompleted= %p", this);
+                    window.console.log("me in jobCompleted= %p", me);
+                }
+                $("#debug").append("response=" + response + "<br>");  //this works
+                $("#debug").append("prop1=" + this.prop1 + "<br>");   //this doesnt work
+                $("#debug").append("prop1=" + me.prop1 + "<br>");   //this works
+            }
+        }
+
+        var theAjaxQue = new ajaxQue();
+        theAjaxQue.get("test1a.php", "var1=value1");
+
+    </script>
+</body>
+</html>

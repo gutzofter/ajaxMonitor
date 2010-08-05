@@ -51,7 +51,7 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
     var messageCache = {};
     var timingServices =  stopWatchService;
 
-    var originalAjax = $.ajax;
+    var originalAjax = {};
 
     service.getMessage = function(index) {
         var message = messageCache[index];
@@ -77,8 +77,6 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
     };
 
     service.wrapAjax = function() {
-        var xhr = {};
-
         originalAjax = $.ajax;
         if(originalAjax.isMonitoredCount) {
             originalAjax.isMonitoredCount++;
@@ -88,19 +86,21 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
         }
 
         $.ajax = function(settings) {
+            var xhr = {};
+
             var stopWatch = timingServices();
             
-            var ajaxMonitorSettings = $.extend({}, settings);
-
+            //TODO: need to unit test for the extension of global ajaxSettings
+            var ajaxMonitorSettings = $.extend({}, $.ajaxSettings, settings);
 
             ajaxMonitorSettings.beforeSend = service.monitorBeforeSend(ajaxMonitorSettings.beforeSend, newMessageIndex, stopWatch);
             ajaxMonitorSettings.error = service.monitorError(ajaxMonitorSettings.error, newMessageIndex);
             ajaxMonitorSettings.success = service.monitorSuccess(ajaxMonitorSettings.success, newMessageIndex);
             ajaxMonitorSettings.complete = service.monitorComplete(ajaxMonitorSettings.complete, newMessageIndex, stopWatch);
 
-            if(ajaxMonitorSettings.type === undefined) {
-                ajaxMonitorSettings.type = $.ajaxSettings.type;
-            }
+//            if(ajaxMonitorSettings.type === undefined) {
+//                ajaxMonitorSettings.type = $.ajaxSettings.type;
+//            }
 
             if(ajaxMonitorSettings.mock) {
                 var mockAjax = NewAjaxMock('success', {
@@ -115,7 +115,7 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
                     ,url:               ajaxMonitorSettings.url
                 });
                 
-                xhr = mockAjax(ajaxMonitorSettings);
+                xhr = mockAjax.call(this, ajaxMonitorSettings);
             }
             else {
                 service.addMessage(newMessageIndex, {
@@ -126,7 +126,7 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
                     ,url:               ajaxMonitorSettings.url
                 });
 
-                xhr = originalAjax(ajaxMonitorSettings);
+                xhr = originalAjax.call(this, ajaxMonitorSettings);
             }
 
             newMessageIndex++;
@@ -206,11 +206,16 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
 
         return function(request) {
             stopWatch.start();
-            origBeforeSend(request);
+
+            //TODO: need to add unit tests for abortEarly
+            var abortEarly = origBeforeSend(request);
 
             currentMessage = service.getMessage(messageIndex);
 
             if(currentMessage) {
+                if(abortEarly) {
+                    currentMessage.completedStatus = 'aborted';
+                }
                 currentMessage.requestStatus = 'beforeSend';
             }
             else {
@@ -223,6 +228,8 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
 
             service.addMessage(messageIndex, currentMessage);
             msgBus.fire.messageBeforeSend();
+
+            return abortEarly;
         };
     };
 
