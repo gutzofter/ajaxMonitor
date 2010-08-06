@@ -214,7 +214,8 @@ Z</textarea>
 </body>
 
 </html>
-<script type="text/javascript" src="../../../scripts/jquery-1.4.2.js"></script>
+<script type="text/javascript" src="../../../scripts/jquery-1.4.2.modified.js"></script>
+<!--<script type="text/javascript" src="../../../scripts/jquery.beta/jquery.beta.js"></script>-->
 
 <script type="text/javascript" src="../../../scripts/ajaxMonitor.msg.bus.js"></script>
 <script type="text/javascript" src="../../../scripts/ajaxMonitor.view.js"></script>
@@ -232,6 +233,7 @@ Z</textarea>
 <script type="text/javascript" src="../tests.helper.js"></script>
 
 <script type="text/javascript" src="tests.ajax.js"></script>
+<!--<script type="text/javascript" src="../../../scripts/jquery.beta/tests.ajax.beta.js"></script>-->
 
 <script type="text/javascript">
     $(function() {

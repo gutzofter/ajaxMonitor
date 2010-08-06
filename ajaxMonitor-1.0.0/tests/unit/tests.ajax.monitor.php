@@ -19,7 +19,8 @@
     </body>
 
 </html>
-<script type="text/javascript" src="../../scripts/jquery-1.4.2.js"></script>
+<!--<script type="text/javascript" src="../../scripts/jquery-1.4.2.js"></script>-->
+<script type="text/javascript" src="../../scripts/jquery.beta/jquery.beta.js"></script>
 <script type="text/javascript" src="../../../../qunit/qunit.js"></script>
 
 <script type="text/javascript" src="../../scripts/ajaxMonitor.msg.bus.js"></script>

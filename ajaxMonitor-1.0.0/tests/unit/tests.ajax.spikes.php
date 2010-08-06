@@ -6,7 +6,7 @@
         <link rel="stylesheet" href="../../../../qunit/qunit.css" type="text/css" media="screen">
         <link rel="stylesheet" type="text/css" href="../../styles/ajaxMonitor.css" media="all"/>
 
-        <script type="text/javascript" src="../../scripts/jquery-1.4.2.js"></script>
+        <script type="text/javascript" src="../../scripts/jquery-1.4.2.modified.js"></script>
         <script type="text/javascript" src="../../../../qunit/qunit.js"></script>
 
         <script type="text/javascript" src="../../scripts/ajaxMonitor.service.js"></script>
