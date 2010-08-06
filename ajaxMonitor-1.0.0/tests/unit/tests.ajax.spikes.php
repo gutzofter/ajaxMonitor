@@ -9,6 +9,7 @@
         <script type="text/javascript" src="../../scripts/jquery-1.4.2.js"></script>
         <script type="text/javascript" src="../../../../qunit/qunit.js"></script>
 
+        <script type="text/javascript" src="../../scripts/ajaxMonitor.service.js"></script>
         <script type="text/javascript" src="../../src/jquery.ajaxMonitor-1.0.0.js"></script>
         <script type="text/javascript" src="tests.helper.js"></script>
 

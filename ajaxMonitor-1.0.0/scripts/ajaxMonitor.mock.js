@@ -7,32 +7,69 @@
  */
 
 function NewAjaxMock(responseType, responseData) {
-    var xhr = { status: 200 };
+    var mockSettings = {};
+
+    var isNotAbort = true;
+
+    var xhr = {
+        status: 200
+        ,abort: function() {
+            isNotAbort = false;
+        }
+    };
+
     var textStatus = 'success';
 
-    return function(settings) {
-        if (settings.beforeSend) {
-            settings.beforeSend();
-        }
-        if (responseType === 'success') {
-            if (settings.success) {
-                settings.success(responseData);
+    function executeResponse() {
+        if (isNotAbort) {
+            if (responseType === 'success') {
+                if (mockSettings.success) {
+                    mockSettings.success(responseData);
+                }
+            }
+            else {
+                if (mockSettings.error) {
+                    xhr.status = 404;
+                    textStatus = 'error';
+                    mockSettings.error(xhr, responseData);
+                }
+            }
+
+            if (mockSettings.complete) {
+                mockSettings.complete(xhr, textStatus);
             }
         }
         else {
-            if (settings.error) {
-                xhr.status = 404;
-                textStatus = 'error';
-                settings.error(xhr, responseData);
+            if (mockSettings.complete) {
+                textStatus = 'abort';
+                mockSettings.complete(xhr, textStatus);
             }
-        }
-
-        if (settings.complete) {
-            settings.complete(xhr, textStatus);
-        }
+         }
 
         return xhr;
     }
+
+    return function(settings) {
+        mockSettings = $.extend(true, {}, settings);
+
+        if (settings.beforeSend) {
+
+            if (mockSettings.beforeSend() === false) {
+                return false;
+            }
+        }
+
+        if (mockSettings.wait) {
+            //todo: setup timer
+            setTimeout(executeResponse, mockSettings.wait);
+        }
+        else {
+            xhr = executeResponse();
+        }
+
+        return xhr;
+    };
+
 }
 
 function NewAjaxMocker(responseType, runTimes, responseData) {
@@ -51,7 +88,7 @@ function NewAjaxMocker(responseType, runTimes, responseData) {
         }
         else {
             $.ajax = originalAjax;
-            xhr =  $.ajax.call(this, settings);
+            xhr = $.ajax.call(this, settings);
             return xhr;
         }
     };

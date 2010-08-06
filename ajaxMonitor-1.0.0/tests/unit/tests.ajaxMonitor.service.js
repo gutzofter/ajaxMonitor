@@ -313,9 +313,12 @@ should('validate that timing is not getting mangled and only the correct events 
         ,url:           '../../server_side.php'
         ,async:         false
         ,dataType:      'json'
-        ,beforeSend:    function() {}
-        ,complete:      function() {}
-        ,success:       function() {}
+        ,beforeSend:    function() {
+        }
+        ,complete:      function() {
+        }
+        ,success:       function() {
+        }
     };
 
     $.ajax(defaultSettings);
@@ -347,9 +350,12 @@ should('specify default request type of GET if no request type is specified', fu
         url:           '../../server_side.php'
         ,async:         false
         ,dataType:      'json'
-        ,beforeSend:    function() {}
-        ,complete:      function() {}
-        ,success:       function() {}
+        ,beforeSend:    function() {
+        }
+        ,complete:      function() {
+        }
+        ,success:       function() {
+        }
     };
 
     var xhr = $.ajax(defaultSettings);
@@ -372,15 +378,87 @@ should('verify that .ajax returns xhr reuqest object', function() {
         url:           '../../server_side.php'
         ,async:         false
         ,dataType:      'json'
-        ,beforeSend:    function() {}
-        ,complete:      function() {}
-        ,success:       function() {}
+        ,beforeSend:    function() {
+        }
+        ,complete:      function() {
+        }
+        ,success:       function() {
+        }
     };
 
     var xhr = $.ajax(defaultSettings);
     same(xhr.status, 200, 'xhr status is 200');
 
 });
+
+should('specify abort in message (beforeSend, cancel request)', function() {
+    enableNullEvent('messageBeforeSend');
+    enableNullEvent('messageSuccess');
+    enableNullEvent('messageCompleted');
+
+    var message = {};
+
+    var expectedMessage = {
+        "statusHTTP": 'abort'
+    };
+
+    var defaultSettings = {
+        url:           '../../server_side.php'
+        ,async:         false
+        ,dataType:      'json'
+        ,beforeSend:    function() {
+            return false;
+        }
+        ,complete:      function() {
+        }
+        ,success:       function() {
+        }
+    };
+
+    var xhr = $.ajax(defaultSettings);
+    message = service.getCurrentMessage();
+    same(message.statusHTTP, expectedMessage.statusHTTP, 'message request type is ');
+});
+
+should('specify abort in message abort request object', function() {
+    enableNullEvent('messageBeforeSend');
+    enableNullEvent('messageSuccess');
+    enableNullEvent('messageCompleted');
+
+    var message = {};
+
+    var expectedMessage = {
+        "completedStatus": 'abort'
+    };
+
+    var waitTime = 100;
+
+    var defaultSettings = {
+        url:           '../../server_side.php?wait=5'
+        ,async:         false
+        ,dataType:      'json'
+        ,beforeSend:    function() {
+        }
+        ,complete:      function() {
+        }
+        ,success:       function() {
+        }
+        ,wait:          waitTime
+    };
+
+    var xhr = $.ajax(defaultSettings);
+    xhr.abort();
+
+    stop(1000);
+    setTimeout(stopper, waitTime);
+
+    function stopper() {
+        message = service.getCurrentMessage();
+        same(message.completedStatus, expectedMessage.completedStatus, 'message request type is ');
+        start();
+    }
+});
+
 
 should('get wrappped count', function() {
     same(service.isActiveCount(), 1, 'service is activated count');
@@ -461,7 +539,7 @@ should('get me my time', function() {
     stopWatch.start();
 
     var x = 0;
-    for( var i = 0; i < 1000000; i++) {
+    for (var i = 0; i < 1000000; i++) {
         x = i;
     }
     stopWatch.stop();
@@ -469,5 +547,49 @@ should('get me my time', function() {
 
     same(x, 999999);
     same(elapsedTime > 0, true, 'elapsed time is ' + elapsedTime);
+});
+
+should('verify that without start elapsed === -1', function() {
+    var stopWatch = NewStopWatchService();
+
+    var time = stopWatch.elapsed();
+
+    same(time, -1, 'no start');
+
+});
+
+should('verify that without stop elapsed === -1', function() {
+    var stopWatch = NewStopWatchService();
+
+    stopWatch.stop();
+    var time = stopWatch.elapsed();
+
+
+    same(time, -1, 'no start');
+
+});
+
+should('verify that with start and without stop elapsed === -1', function() {
+    var stopWatch = NewStopWatchService();
+
+    stopWatch.start();
+    var time = stopWatch.elapsed();
+
+
+    same(time, -1, 'start/no stop');
+
+});
+
+should('verify that with start and with stop elapsed resets start stop', function() {
+    var stopWatch = NewStopWatchService();
+
+    stopWatch.start();
+    stopWatch.stop();
+    stopWatch.elapsed();
+    var time = stopWatch.elapsed();
+
+
+    same(time, -1, 'start/no stop');
+
 });
 

@@ -756,6 +756,44 @@ test("jQuery.ajax() - JSONP, Local", function() {
 	});
 });
 
+test("jQuery.ajax() - JSONP, Local [validate completion count]", function() {
+	expect(3);
+
+	var otherHandlerCount = 0;
+    var completeCount = 0;
+
+	function validateCompleteCount(){
+        if ( otherHandlerCount == 1 ) {
+            if(completeCount !== 1) {
+                ok(false, 'the complete count was: ' + completeCount);
+            }
+            else {
+                ok(true, 'the complete count was: ' + completeCount);
+            }
+            start();
+        }
+    }
+
+	stop();
+
+	jQuery.ajax({
+		url: "data/jsonp.php",
+		dataType: "jsonp",
+		success: function(data){
+			ok( data.data, "JSON results returned (GET, no callback)" );
+            otherHandlerCount++;
+		},
+		error: function(data){
+			ok( false, "Ajax error JSON (GET, no callback)" );
+            otherHandlerCount++;
+		}
+        ,complete: function() {
+            completeCount++;
+            validateCompleteCount();
+        }
+	});
+});
+
 test("JSONP - Custom JSONP Callback", function() {
 	expect(1);
 	stop();

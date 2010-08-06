@@ -7,10 +7,18 @@
  * To change this template use File | Settings | File Templates.
  */
 
+error_reporting(0);
+
 $testJson = array(
     'status' => 'success'
     ,'message' => 'Thank you for using ajaxMonitor!'
 );
+
+$wait = $_REQUEST['wait'];
+
+if ($wait) {
+    sleep($wait);
+}
 
 echo json_encode($testJson);
 

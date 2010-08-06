@@ -233,11 +233,11 @@ Z</textarea>
 
 <script type="text/javascript" src="tests.ajax.js"></script>
 
-<script type="text/javascript">
-    $(function() {
-        var monitor = $('#ajax_monitor').ajaxMonitor({
-            monitorActive: true
-            ,maximize: true});
-    });
-</script>
-
+<!--<script type="text/javascript">-->
+<!--    $(function() {-->
+<!--        var monitor = $('#ajax_monitor').ajaxMonitor({-->
+<!--            monitorActive: true-->
+<!--            ,maximize: true});-->
+<!--    });-->
+<!--</script>-->
+<!---->

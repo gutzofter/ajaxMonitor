@@ -5,6 +5,7 @@
  * Time: 10:57:10 AM
  * To change this template use File | Settings | File Templates.
  */
+var maxRunCount = 1000;
 
 module('Ajax - Various spike tests');
 
@@ -39,7 +40,6 @@ should('profile Ajax requests', function() {
     var totalResult = true;
     var totalTime = 0;
 
-    var maxRunCount = 10;
     for(var i = 0; i < maxRunCount; i++) {
         sw.start();
         totalResult = (totalResult &&getAjaxServerRequest({}));
@@ -60,7 +60,6 @@ should('profile Ajax requests with monitor', function() {
     var totalResult = true;
     var totalTime = 0;
 
-    var maxRunCount = 10;
     for(var i = 0; i < maxRunCount; i++) {
         sw.start();
         totalResult = (totalResult &&getAjaxServerRequest({}));

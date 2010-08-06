@@ -10,8 +10,8 @@ function NewStopWatchService() {
     var stopWatch = {};
 
 
-    var start = -100;
-    var stop = -1;
+    var start = -1;
+    var stop = -1001;
 
     stopWatch.start = function() {
         var d = new Date();
@@ -27,8 +27,13 @@ function NewStopWatchService() {
         var elapsedTime = 0;
 
         elapsedTime = stop - start;
-        start = 0;
-        stop = 0;
+
+        if(stop === -1001 || start === -1) {
+            return -1;
+        }
+
+        start = -1;
+        stop = -1001;
 
         return elapsedTime;
     };
@@ -51,7 +56,7 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
     var messageCache = {};
     var timingServices =  stopWatchService;
 
-    var originalAjax = {};
+    var originalAjax = $.noop;
 
     service.getMessage = function(index) {
         var message = messageCache[index];
@@ -98,10 +103,6 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
             ajaxMonitorSettings.success = service.monitorSuccess(ajaxMonitorSettings.success, newMessageIndex);
             ajaxMonitorSettings.complete = service.monitorComplete(ajaxMonitorSettings.complete, newMessageIndex, stopWatch);
 
-//            if(ajaxMonitorSettings.type === undefined) {
-//                ajaxMonitorSettings.type = $.ajaxSettings.type;
-//            }
-
             if(ajaxMonitorSettings.mock) {
                 var mockAjax = NewAjaxMock('success', {
                     status:     'success'
@@ -109,6 +110,7 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
                 });
                 service.addMessage(newMessageIndex, {
                     id:                 newMessageIndex
+                    ,requestStatus:     'starting'
                     ,requestType:       ajaxMonitorSettings.type + ' [Monitored - Mock]'
                     ,completedStatus:   'unknown'
                     ,timeToComplete:    -1
@@ -120,6 +122,7 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
             else {
                 service.addMessage(newMessageIndex, {
                     id:                 newMessageIndex
+                    ,requestStatus:     'starting'
                     ,requestType:       ajaxMonitorSettings.type + ' [Monitored]'
                     ,completedStatus:   'unknown'
                     ,timeToComplete:    -1
@@ -213,8 +216,9 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
             currentMessage = service.getMessage(messageIndex);
 
             if(currentMessage) {
-                if(abortEarly) {
+                if(abortEarly === false) {
                     currentMessage.completedStatus = 'aborted';
+                    currentMessage.statusHTTP = 'abort';
                 }
                 currentMessage.requestStatus = 'beforeSend';
             }
@@ -243,7 +247,7 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
         }
 
         return function(request, status) {
-            origComplete(request, status);
+            var xhr = origComplete(request, status);
 
             stopWatch.stop();
 
@@ -265,7 +269,7 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
                 }
             }
             else {
-                // unexpected completion of message this should be written to thrown an error, but it worked good in the unit test
+                // unexpected completion of message this should be written to throw an error, but it worked good in the unit test
                 currentMessage = {};
                 currentMessage.id = -1,
                 currentMessage.requestStatus = 'completed';
@@ -276,6 +280,8 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
             service.addMessage(messageIndex, currentMessage);
             
             msgBus.fire.messageCompleted();
+
+            return xhr;
         };
     };
 
