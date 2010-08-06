@@ -757,7 +757,7 @@ test("jQuery.ajax() - JSONP, Local", function() {
 });
 
 test("jQuery.ajax() - JSONP, Local [validate completion count]", function() {
-	expect(3);
+	expect(2);
 
 	var otherHandlerCount = 0;
     var completeCount = 0;
