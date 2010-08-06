@@ -122,6 +122,7 @@
             columns += view.formatColumnItemHTML('HTTP Status', 5);
             columns += view.formatColumnItemHTML('Completion Time mSec(s)', 10);
             columns += view.formatColumnItemHTML('Request Type', 25);
+            columns += view.formatColumnItemHTML('Data Type', 25);
             columns += view.formatColumnItemHTML('Url', 25);
             columns += view.formatColumnItemHTML('Request Status', 15);
             columns += view.formatColumnItemHTML('Completion Status', 15);
@@ -132,7 +133,6 @@
         };
 
         view.formatColumnItemHTML = function(item, width) {
-//        return '<th width="' + width + '%">' + item + '</th>';
             return '<th >' + item + '</th>';
         };
 
@@ -143,6 +143,7 @@
             tableEntry += view.formatMessageItemHTML(message.statusHTTP);
             tableEntry += view.formatMessageItemHTML(message.timeToComplete);
             tableEntry += view.formatMessageItemHTML(message.requestType);
+            tableEntry += view.formatMessageItemHTML(message.dataType);
             tableEntry += view.formatMessageItemHTML(message.url);
             tableEntry += view.formatMessageItemHTML(message.requestStatus);
             tableEntry += view.formatMessageItemHTML(message.completedStatus);
@@ -226,8 +227,8 @@
         var stopWatch = {};
 
 
-        var start = -100;
-        var stop = -1;
+        var start = -1;
+        var stop = -1001;
 
         stopWatch.start = function() {
             var d = new Date();
@@ -243,8 +244,13 @@
             var elapsedTime = 0;
 
             elapsedTime = stop - start;
-            start = 0;
-            stop = 0;
+
+            if(stop === -1001 || start === -1) {
+                return -1;
+            }
+
+            start = -1;
+            stop = -1001;
 
             return elapsedTime;
         };
@@ -303,6 +309,7 @@
 
             $.ajax = function(settings) {
                 var xhr = {};
+                var dataType = 'smart';
 
                 var stopWatch = timingServices();
 
@@ -314,6 +321,10 @@
                 ajaxMonitorSettings.success = service.monitorSuccess(ajaxMonitorSettings.success, newMessageIndex);
                 ajaxMonitorSettings.complete = service.monitorComplete(ajaxMonitorSettings.complete, newMessageIndex, stopWatch);
 
+                if(ajaxMonitorSettings.dataType) {
+                    dataType = ajaxMonitorSettings.dataType;
+                }
+
                 if(ajaxMonitorSettings.mock) {
                     var mockAjax = NewAjaxMock('success', {
                         status:     'success'
@@ -321,6 +332,8 @@
                     });
                     service.addMessage(newMessageIndex, {
                         id:                 newMessageIndex
+                        ,dataType:          dataType
+                        ,requestStatus:     'starting'
                         ,requestType:       ajaxMonitorSettings.type + ' [Monitored - Mock]'
                         ,completedStatus:   'unknown'
                         ,timeToComplete:    -1
@@ -332,6 +345,8 @@
                 else {
                     service.addMessage(newMessageIndex, {
                         id:                 newMessageIndex
+                        ,dataType:          dataType
+                        ,requestStatus:     'starting'
                         ,requestType:       ajaxMonitorSettings.type + ' [Monitored]'
                         ,completedStatus:   'unknown'
                         ,timeToComplete:    -1
@@ -425,8 +440,9 @@
                 currentMessage = service.getMessage(messageIndex);
 
                 if(currentMessage) {
-                    if(abortEarly) {
+                    if(abortEarly === false) {
                         currentMessage.completedStatus = 'aborted';
+                        currentMessage.statusHTTP = 'abort';
                     }
                     currentMessage.requestStatus = 'beforeSend';
                 }
@@ -455,7 +471,7 @@
             }
 
             return function(request, status) {
-                origComplete(request, status);
+                var xhr = origComplete(request, status);
 
                 stopWatch.stop();
 
@@ -477,7 +493,7 @@
                     }
                 }
                 else {
-                    // unexpected completion of message this should be written to thrown an error, but it worked good in the unit test
+                    // unexpected completion of message this should be written to throw an error, but it worked good in the unit test
                     currentMessage = {};
                     currentMessage.id = -1,
                     currentMessage.requestStatus = 'completed';
@@ -488,6 +504,8 @@
                 service.addMessage(messageIndex, currentMessage);
 
                 msgBus.fire.messageCompleted();
+
+                return xhr;
             };
         };
 
@@ -589,32 +607,69 @@
     }
 
     function NewAjaxMock(responseType, responseData) {
-        var xhr = { status: 200 };
+        var mockSettings = {};
+
+        var isNotAbort = true;
+
+        var xhr = {
+            status: 200
+            ,abort: function() {
+                isNotAbort = false;
+            }
+        };
+
         var textStatus = 'success';
 
-        return function(settings) {
-            if (settings.beforeSend) {
-                settings.beforeSend();
-            }
-            if (responseType === 'success') {
-                if (settings.success) {
-                    settings.success(responseData);
+        function executeResponse() {
+            if (isNotAbort) {
+                if (responseType === 'success') {
+                    if (mockSettings.success) {
+                        mockSettings.success(responseData);
+                    }
+                }
+                else {
+                    if (mockSettings.error) {
+                        xhr.status = 404;
+                        textStatus = 'error';
+                        mockSettings.error(xhr, responseData);
+                    }
+                }
+
+                if (mockSettings.complete) {
+                    mockSettings.complete(xhr, textStatus);
                 }
             }
             else {
-                if (settings.error) {
-                    xhr.status = 404;
-                    textStatus = 'error';
-                    settings.error(xhr, responseData);
+                if (mockSettings.complete) {
+                    textStatus = 'abort';
+                    mockSettings.complete(xhr, textStatus);
                 }
-            }
-
-            if (settings.complete) {
-                settings.complete(xhr, textStatus);
-            }
+             }
 
             return xhr;
         }
+
+        return function(settings) {
+            mockSettings = $.extend(true, {}, settings);
+
+            if (settings.beforeSend) {
+
+                if (mockSettings.beforeSend() === false) {
+                    return false;
+                }
+            }
+
+            if (mockSettings.wait) {
+                //todo: setup timer
+                setTimeout(executeResponse, mockSettings.wait);
+            }
+            else {
+                xhr = executeResponse();
+            }
+
+            return xhr;
+        };
+
     }
 
     function NewAjaxMocker(responseType, runTimes, responseData) {
@@ -633,7 +688,7 @@
             }
             else {
                 $.ajax = originalAjax;
-                xhr =  $.ajax.call(this, settings);
+                xhr = $.ajax.call(this, settings);
                 return xhr;
             }
         };
