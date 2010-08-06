@@ -97,6 +97,7 @@ function NewAjaxMonitorView(msgBus) {
         columns += view.formatColumnItemHTML('HTTP Status', 5);
         columns += view.formatColumnItemHTML('Completion Time mSec(s)', 10);
         columns += view.formatColumnItemHTML('Request Type', 25);
+        columns += view.formatColumnItemHTML('Data Type', 25);
         columns += view.formatColumnItemHTML('Url', 25);
         columns += view.formatColumnItemHTML('Request Status', 15);
         columns += view.formatColumnItemHTML('Completion Status', 15);
@@ -107,7 +108,6 @@ function NewAjaxMonitorView(msgBus) {
     };
 
     view.formatColumnItemHTML = function(item, width) {
-//        return '<th width="' + width + '%">' + item + '</th>';
         return '<th >' + item + '</th>';
     };
 
@@ -118,6 +118,7 @@ function NewAjaxMonitorView(msgBus) {
         tableEntry += view.formatMessageItemHTML(message.statusHTTP);
         tableEntry += view.formatMessageItemHTML(message.timeToComplete);
         tableEntry += view.formatMessageItemHTML(message.requestType);
+        tableEntry += view.formatMessageItemHTML(message.dataType);
         tableEntry += view.formatMessageItemHTML(message.url);
         tableEntry += view.formatMessageItemHTML(message.requestStatus);
         tableEntry += view.formatMessageItemHTML(message.completedStatus);

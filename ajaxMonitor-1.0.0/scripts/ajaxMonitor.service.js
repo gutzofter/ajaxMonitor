@@ -92,6 +92,7 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
 
         $.ajax = function(settings) {
             var xhr = {};
+            var dataType = 'smart';
 
             var stopWatch = timingServices();
             
@@ -103,6 +104,10 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
             ajaxMonitorSettings.success = service.monitorSuccess(ajaxMonitorSettings.success, newMessageIndex);
             ajaxMonitorSettings.complete = service.monitorComplete(ajaxMonitorSettings.complete, newMessageIndex, stopWatch);
 
+            if(ajaxMonitorSettings.dataType) {
+                dataType = ajaxMonitorSettings.dataType;
+            }
+
             if(ajaxMonitorSettings.mock) {
                 var mockAjax = NewAjaxMock('success', {
                     status:     'success'
@@ -110,6 +115,7 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
                 });
                 service.addMessage(newMessageIndex, {
                     id:                 newMessageIndex
+                    ,dataType:          dataType
                     ,requestStatus:     'starting'
                     ,requestType:       ajaxMonitorSettings.type + ' [Monitored - Mock]'
                     ,completedStatus:   'unknown'
@@ -122,6 +128,7 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
             else {
                 service.addMessage(newMessageIndex, {
                     id:                 newMessageIndex
+                    ,dataType:          dataType
                     ,requestStatus:     'starting'
                     ,requestType:       ajaxMonitorSettings.type + ' [Monitored]'
                     ,completedStatus:   'unknown'

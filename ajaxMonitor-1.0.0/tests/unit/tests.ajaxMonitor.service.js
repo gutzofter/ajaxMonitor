@@ -266,6 +266,7 @@ should('get completion message for post request', function() {
         ,"completedStatus":     "success"
         ,"timeToComplete":      100
         ,"requestType":         "POST [Monitored]"
+        ,dataType:              'smart'
         ,"url":                 '../../server_side.php'
         ,"statusHTTP":          200
     };
@@ -449,7 +450,7 @@ should('specify abort in message abort request object', function() {
     var xhr = $.ajax(defaultSettings);
     xhr.abort();
 
-    stop(1000);
+    stop(2000);
     setTimeout(stopper, waitTime);
 
     function stopper() {

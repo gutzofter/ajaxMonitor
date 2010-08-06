@@ -14,6 +14,8 @@
  * Date: Sat Feb 13 22:33:48 2010 -0500
  * Modified httpSuccess to handle xhr.status === 0 errors
  * gutzofter 08/05/10
+ * Modified success call in JSONP execution
+ * gutzofter 08/06/10
  */
 (function( window, undefined ) {
 

@@ -90,7 +90,6 @@ function getAjaxServerRequest(settings) {
         type:           'POST'
         ,url:           '../../server_side.php'
         ,async:         false
-        ,dataType:      'json'
         ,beforeSend:    function() {
             success = false;
             completedStatus = '';

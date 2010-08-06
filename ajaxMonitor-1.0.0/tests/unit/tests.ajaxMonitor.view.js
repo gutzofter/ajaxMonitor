@@ -99,5 +99,5 @@ should('add new message to monitor messages window', function() {
     view.newMessage(message);
 
     // remember you have all html stripped from text in your asserts (see view.newMessage. it adds a tabel entry)
-    same($('#monitor_messages').text(), 'Monitor MessagesIdHTTP StatusCompletion Time mSec(s)Request TypeUrlRequest StatusCompletion StatusIdHTTP StatusCompletion Time mSec(s)Request TypeUrlRequest StatusCompletion Status0undefined100POST [Monitored]../../server_side.phpcompletedsuccess');
+    same($('#monitor_messages').text(), 'Monitor MessagesIdHTTP StatusCompletion Time mSec(s)Request TypeData TypeUrlRequest StatusCompletion StatusIdHTTP StatusCompletion Time mSec(s)Request TypeData TypeUrlRequest StatusCompletion Status0undefined100POST [Monitored]undefined../../server_side.phpcompletedsuccess');
 });
