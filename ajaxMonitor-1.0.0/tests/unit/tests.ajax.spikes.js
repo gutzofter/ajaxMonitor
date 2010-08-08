@@ -75,4 +75,26 @@ should('profile Ajax requests with monitor', function() {
 
 });
 
+    should('test paramterized multidimensional object', function() {
+       var mDimArray = [];
+        mDimArray[0] = [];
+        mDimArray[1] = [];
+
+        mDimArray[0][0] = 'data 0';
+        mDimArray[0][1] = 'data 1';
+        mDimArray[1][0] = 'data 2';
+        mDimArray[1][1] = 'data 3';
+
+        jQuery.ajax({
+            url:        'test.php'
+            ,data:      { mDims: mDimArray }
+            ,dataType:  'json'
+            ,success:   function(data) {
+                if (data.status === "success") {
+                    ok(true, "Rx Json");
+                }
+            }
+        });
+
+    });
 

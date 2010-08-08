@@ -141,6 +141,8 @@ if (!isLocal) {
     });
 
     test("Ajax events with context", function() {
+        var serverResponse = { status: 'success'};
+
         expect(14);
 
         stop();
@@ -194,11 +196,14 @@ if (!isLocal) {
                                 nocallback("complete").call(this);
                                 start();
                             }
+                            ,mock: true
                         });
                     }
+                    ,mock: true
                 });
             },
             context: context
+            ,mock: true            
         });
     });
 
@@ -207,7 +212,7 @@ if (!isLocal) {
 
         stop();
 
-        var obj = {}
+        var obj = {};
 
         jQuery.ajax({
             url: url("data/name.html"),
@@ -218,6 +223,7 @@ if (!isLocal) {
             complete: function() {
                 start();
             }
+            ,mock: true
         });
 
         equals(obj.test, "foo", "Make sure the original object is maintained.");
@@ -1321,6 +1327,5 @@ if (!isLocal) {
     });
 
 }
-;
 
 //}
