@@ -155,7 +155,7 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
         }
 
         return function(data, textStatus, request) {
-            origSuccess(data, textStatus, request);
+            origSuccess.call(this, data, textStatus, request);
 
             currentMessage = service.getMessage((messageIndex));
 
@@ -185,7 +185,7 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
         }
 
         return function(request, status, errorThrown) {
-            origError(request, status, errorThrown);
+            origError.call(this, request, status, errorThrown);
 
             currentMessage = service.getMessage((messageIndex));
 
@@ -218,7 +218,7 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
             stopWatch.start();
 
             //TODO: need to add unit tests for abortEarly
-            var abortEarly = origBeforeSend(request);
+            var abortEarly = origBeforeSend.call(this, request);
 
             currentMessage = service.getMessage(messageIndex);
 
@@ -254,7 +254,7 @@ function NewAjaxMonitorService(msgBus, stopWatchService) {
         }
 
         return function(request, status) {
-            var xhr = origComplete(request, status);
+            var xhr = origComplete.call(this, request, status);
 
             stopWatch.stop();
 

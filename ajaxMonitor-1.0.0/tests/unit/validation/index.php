@@ -24,6 +24,7 @@
             <a href="http://diveintomark.org/" class="blog" hreflang="en" id="mark">diveintomark</a>
 
         </p>
+        <div id="gutz_foo" >gutz was here!</div>
         <div id="foo">
             <p id="sndp">Everything inside the red border is inside a div with <code>id="foo"</code>.</p>
             <p lang="en" id="en">This is a normal link: <a id="yahoo" href="http://www.yahoo.com/" class="blogTest">Yahoo</a></p>

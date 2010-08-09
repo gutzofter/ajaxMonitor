@@ -140,9 +140,46 @@ if (!isLocal) {
         xhr.abort();
     });
 
-    test("Ajax events with context", function() {
-        var serverResponse = { status: 'success'};
+    test("Ajax events with single-context", function() {
+        expect(6);
 
+        stop();
+        var context = document.createElement("div");
+        var eventCount = 0;
+
+        function event(e) {
+            equals(this, context, e.type);
+            if(++eventCount === 3) {
+                jQuery('#gutz_foo').add(context).unbind();
+            }
+        }
+
+        function callback(msg) {
+            return function() {
+                equals(this, context, "context is preserved on callback " + msg);
+            };
+        }
+
+        jQuery('#gutz_foo').add(context)
+                .ajaxSend(event)
+                .ajaxComplete(event)
+                .ajaxError(event)
+                .ajaxSuccess(event);
+
+        jQuery.ajax({
+            url: url("data/name.html"),
+            beforeSend: callback("beforeSend"),
+            success: callback("success"),
+            error: callback("error"),
+            complete: function() {
+                callback("complete").call(this);
+                start();
+            },
+            context: context
+        });
+    });
+
+    test("Ajax events with context", function() {
         expect(14);
 
         stop();
@@ -196,14 +233,11 @@ if (!isLocal) {
                                 nocallback("complete").call(this);
                                 start();
                             }
-                            ,mock: true
                         });
                     }
-                    ,mock: true
                 });
             },
             context: context
-            ,mock: true            
         });
     });
 
@@ -223,7 +257,6 @@ if (!isLocal) {
             complete: function() {
                 start();
             }
-            ,mock: true
         });
 
         equals(obj.test, "foo", "Make sure the original object is maintained.");

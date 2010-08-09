@@ -24,25 +24,25 @@ function NewAjaxMock(responseType, responseData) {
         if (isNotAbort) {
             if (responseType === 'success') {
                 if (mockSettings.success) {
-                    mockSettings.success(responseData);
+                    mockSettings.success.call(this, responseData);
                 }
             }
             else {
                 if (mockSettings.error) {
                     xhr.status = 404;
                     textStatus = 'error';
-                    mockSettings.error(xhr, responseData);
+                    mockSettings.error.call(this, xhr, responseData);
                 }
             }
 
             if (mockSettings.complete) {
-                mockSettings.complete(xhr, textStatus);
+                mockSettings.complete.call(this, xhr, textStatus);
             }
         }
         else {
             if (mockSettings.complete) {
                 textStatus = 'abort';
-                mockSettings.complete(xhr, textStatus);
+                mockSettings.complete.call(this, xhr, textStatus);
             }
          }
 
@@ -51,10 +51,11 @@ function NewAjaxMock(responseType, responseData) {
 
     return function(settings) {
         mockSettings = $.extend(true, {}, settings);
+        var callbackContext = settings && settings.context || mockSettings;
 
         if (settings.beforeSend) {
 
-            if (mockSettings.beforeSend() === false) {
+            if (mockSettings.beforeSend.call(callbackContext) === false) {
                 return false;
             }
         }
@@ -64,7 +65,7 @@ function NewAjaxMock(responseType, responseData) {
             setTimeout(executeResponse, mockSettings.wait);
         }
         else {
-            xhr = executeResponse();
+            xhr = executeResponse.call(callbackContext);
         }
 
         return xhr;
@@ -80,6 +81,7 @@ function NewAjaxMocker(responseType, runTimes, responseData) {
 
 
     $.ajax = function(settings) {
+
         if (mock.executionCount() < runTimes) {
             var mockedAjax = NewAjaxMock(responseType, responseData);
             xhr = mockedAjax.call(this, settings);

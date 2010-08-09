@@ -421,6 +421,64 @@ should('specify abort in message (beforeSend, cancel request)', function() {
     same(message.statusHTTP, expectedMessage.statusHTTP, 'message request type is ');
 });
 
+should("maintain context with ajax events", function() {
+    expect(4); // don't forget expectation in teardown
+
+    stop();
+    enableNullEvent('messageBeforeSend');
+    enableNullEvent('messageSuccess');
+    enableNullEvent('messageCompleted');
+
+    var context = document.createElement("div");
+
+    function callback(msg) {
+        return function() {
+            equals(this, context, "context is preserved on callback " + msg);
+        };
+    }
+
+    $.ajax({
+        url: 'data/name.html',
+        beforeSend: callback("beforeSend"),
+        success: callback("success"),
+        error: callback("error"),
+        complete: function() {
+            callback("complete").call(this);
+            start();
+        },
+        context: context
+    });
+});
+
+should('specify abort in message (beforeSend, cancel request)', function() {
+    enableNullEvent('messageBeforeSend');
+    enableNullEvent('messageSuccess');
+    enableNullEvent('messageCompleted');
+
+    var message = {};
+
+    var expectedMessage = {
+        "statusHTTP": 'abort'
+    };
+
+    var defaultSettings = {
+        url:           '../../server_side.php'
+        ,async:         false
+        ,dataType:      'json'
+        ,beforeSend:    function() {
+            return false;
+        }
+        ,complete:      function() {
+        }
+        ,success:       function() {
+        }
+    };
+
+    var xhr = $.ajax(defaultSettings);
+    message = service.getCurrentMessage();
+    same(message.statusHTTP, expectedMessage.statusHTTP, 'message request type is ');
+});
+
 should('specify abort in message abort request object', function() {
     enableNullEvent('messageBeforeSend');
     enableNullEvent('messageSuccess');
@@ -576,9 +634,7 @@ should('verify that with start and without stop elapsed === -1', function() {
     stopWatch.start();
     var time = stopWatch.elapsed();
 
-
     same(time, -1, 'start/no stop');
-
 });
 
 should('verify that with start and with stop elapsed resets start stop', function() {
